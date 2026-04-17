@@ -1,0 +1,52 @@
+name: Deploy end-user app
+
+# Builds and deploys the end-user app to https://avokaido-app.web.app on
+# every push to main. Auth to GCP is via Workload Identity Federation —
+# no long-lived keys are stored as GitHub secrets.
+#
+# Required GitHub secrets on this repo:
+#   GCP_WORKLOAD_IDENTITY_PROVIDER
+#   GCP_SERVICE_ACCOUNT
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  FLUTTER_VERSION: '3.41.7'
+  PROJECT_ID: 'avokaido-de9e1'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+
+      - run: flutter pub get
+      - run: flutter build web --release
+
+      - name: Authenticate to GCP via Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Deploy to Firebase Hosting (target app)
+        run: |
+          npx -y firebase-tools@latest deploy \
+            --only hosting:app \
+            --project ${{ env.PROJECT_ID }} \
+            --non-interactive
+
+      - name: Summary
+        run: echo "::notice::Deployed end-user app → https://avokaido-app.web.app"
