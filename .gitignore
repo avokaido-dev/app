@@ -1,0 +1,21 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter/
+.idea/
+.vscode/
+*.iml
+
+# Firebase
+.firebase/
+firebase-debug.log
+ui-debug.log
+firestore-debug.log
+
+# Misc
+.DS_Store

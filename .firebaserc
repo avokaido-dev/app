@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "avokaido-de9e1"
+  },
+  "targets": {
+    "avokaido-de9e1": {
+      "hosting": {
+        "app": ["avokaido-app"]
+      }
+    }
+  }
+}
