@@ -64,6 +64,51 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  // Email+password is a fallback path — OAuth (GitHub / Microsoft / Apple)
+  // is the primary sign-in method.
+
+  Future<void> signUpWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    _errorMessage = null;
+    try {
+      await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = e.message ?? e.code;
+      notifyListeners();
+    }
+  }
+
+  Future<void> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    _errorMessage = null;
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = e.message ?? e.code;
+      notifyListeners();
+    }
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    _errorMessage = null;
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = e.message ?? e.code;
+      notifyListeners();
+    }
+  }
+
   Future<void> signOut() => _auth.signOut();
 
   /// Forces the ID token to refresh so custom claims (e.g. a just-created

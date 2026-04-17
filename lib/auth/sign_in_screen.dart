@@ -440,9 +440,59 @@ class _StepTile extends StatelessWidget {
 // Sign-in card
 // ---------------------------------------------------------------------------
 
-class _SignInCard extends StatelessWidget {
+class _SignInCard extends StatefulWidget {
   const _SignInCard({required this.auth});
   final AuthService auth;
+
+  @override
+  State<_SignInCard> createState() => _SignInCardState();
+}
+
+enum _EmailMode { signUp, signIn }
+
+class _SignInCardState extends State<_SignInCard> {
+  bool _showEmail = false;
+  _EmailMode _mode = _EmailMode.signUp;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _busy = false;
+  bool _obscure = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitEmail() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.isEmpty) return;
+    setState(() => _busy = true);
+    if (_mode == _EmailMode.signUp) {
+      await widget.auth.signUpWithEmail(email: email, password: password);
+    } else {
+      await widget.auth.signInWithEmail(email: email, password: password);
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  Future<void> _forgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter your email first.')),
+      );
+      return;
+    }
+    await widget.auth.sendPasswordResetEmail(email);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Password reset sent to $email.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -484,27 +534,62 @@ class _SignInCard extends StatelessWidget {
                   style: TextStyle(fontSize: 13, color: Colors.black54),
                 ),
                 const SizedBox(height: 24),
+
+                // Primary: OAuth providers.
                 _ProviderButton(
                   label: 'Continue with GitHub',
                   icon: Icons.code,
-                  onPressed: auth.signInWithGithub,
+                  onPressed: widget.auth.signInWithGithub,
                 ),
                 const SizedBox(height: 10),
                 _ProviderButton(
                   label: 'Continue with Microsoft',
                   icon: Icons.business,
-                  onPressed: auth.signInWithMicrosoft,
+                  onPressed: widget.auth.signInWithMicrosoft,
                 ),
                 const SizedBox(height: 10),
                 _ProviderButton(
                   label: 'Continue with Apple',
                   icon: Icons.apple,
-                  onPressed: auth.signInWithApple,
+                  onPressed: widget.auth.signInWithApple,
                 ),
-                if (auth.errorMessage != null) ...[
+
+                const SizedBox(height: 18),
+
+                // Secondary: email + password, hidden behind a toggle.
+                if (!_showEmail)
+                  TextButton.icon(
+                    onPressed: () => setState(() => _showEmail = true),
+                    icon: const Icon(Icons.mail_outline, size: 16),
+                    label: const Text('Use email and password instead'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.black54,
+                      textStyle: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w500),
+                    ),
+                  )
+                else
+                  _EmailBlock(
+                    mode: _mode,
+                    emailController: _emailController,
+                    passwordController: _passwordController,
+                    busy: _busy,
+                    obscure: _obscure,
+                    onObscureToggle: () =>
+                        setState(() => _obscure = !_obscure),
+                    onModeToggle: () => setState(() => _mode =
+                        _mode == _EmailMode.signUp
+                            ? _EmailMode.signIn
+                            : _EmailMode.signUp),
+                    onSubmit: _submitEmail,
+                    onForgot: _forgotPassword,
+                    onHide: () => setState(() => _showEmail = false),
+                  ),
+
+                if (widget.auth.errorMessage != null) ...[
                   const SizedBox(height: 16),
                   Text(
-                    auth.errorMessage!,
+                    widget.auth.errorMessage!,
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.red, fontSize: 13),
                   ),
@@ -520,6 +605,147 @@ class _SignInCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _EmailBlock extends StatelessWidget {
+  const _EmailBlock({
+    required this.mode,
+    required this.emailController,
+    required this.passwordController,
+    required this.busy,
+    required this.obscure,
+    required this.onObscureToggle,
+    required this.onModeToggle,
+    required this.onSubmit,
+    required this.onForgot,
+    required this.onHide,
+  });
+
+  final _EmailMode mode;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final bool busy;
+  final bool obscure;
+  final VoidCallback onObscureToggle;
+  final VoidCallback onModeToggle;
+  final VoidCallback onSubmit;
+  final VoidCallback onForgot;
+  final VoidCallback onHide;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSignUp = mode == _EmailMode.signUp;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Row(
+          children: [
+            Expanded(child: Divider()),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'or email & password',
+                style: TextStyle(color: Colors.black45, fontSize: 12),
+              ),
+            ),
+            Expanded(child: Divider()),
+          ],
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: emailController,
+          keyboardType: TextInputType.emailAddress,
+          autofillHints: const [AutofillHints.email],
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            border: OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: passwordController,
+          obscureText: obscure,
+          autofillHints: [
+            isSignUp ? AutofillHints.newPassword : AutofillHints.password,
+          ],
+          decoration: InputDecoration(
+            labelText: 'Password',
+            helperText: isSignUp ? 'At least 6 characters' : null,
+            border: const OutlineInputBorder(),
+            isDense: true,
+            suffixIcon: IconButton(
+              icon: Icon(obscure
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined),
+              onPressed: onObscureToggle,
+            ),
+          ),
+          onSubmitted: (_) => onSubmit(),
+        ),
+        if (!isSignUp) ...[
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: onForgot,
+              child: const Text('Forgot password?'),
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        FilledButton(
+          onPressed: busy ? null : onSubmit,
+          style: FilledButton.styleFrom(
+            backgroundColor: SignInScreen._brandGreen,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            textStyle:
+                const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
+          ),
+          child: busy
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                )
+              : Text(isSignUp ? 'Create account' : 'Sign in'),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              isSignUp
+                  ? 'Already have an account? '
+                  : "Don't have an account? ",
+              style: const TextStyle(fontSize: 13, color: Colors.black54),
+            ),
+            TextButton(
+              onPressed: onModeToggle,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(isSignUp ? 'Sign in' : 'Sign up'),
+            ),
+          ],
+        ),
+        Align(
+          alignment: Alignment.center,
+          child: TextButton(
+            onPressed: onHide,
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black45,
+              textStyle: const TextStyle(fontSize: 12),
+            ),
+            child: const Text('Back to OAuth providers'),
+          ),
+        ),
+      ],
     );
   }
 }
