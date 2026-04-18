@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'auth_service.dart';
 
@@ -6,7 +7,7 @@ import 'auth_service.dart';
 ///
 /// Doubles as the sign-in screen — anyone can read the product pitch
 /// without an account, then scroll down (or hit the top-right button)
-/// to continue with GitHub / Microsoft / Apple.
+/// to continue with GitHub / Google / Microsoft / Apple.
 class SignInScreen extends StatelessWidget {
   const SignInScreen({super.key, required this.auth});
   final AuthService auth;
@@ -307,8 +308,8 @@ class _HowItWorks extends StatelessWidget {
     (
       1,
       'Sign in',
-      'GitHub, Microsoft, or Apple. No email/password — use the accounts '
-          'your team already has.',
+      'GitHub, Google, Microsoft, or Apple — use the account your team '
+          'already has. Email and password is also available as a fallback.',
     ),
     (
       2,
@@ -455,27 +456,45 @@ class _SignInCardState extends State<_SignInCard> {
   _EmailMode _mode = _EmailMode.signUp;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _busy = false;
+  bool _emailBusy = false;
+  bool _oauthBusy = false;
   bool _obscure = true;
 
   @override
+  void initState() {
+    super.initState();
+    widget.auth.addListener(_onAuthUpdate);
+  }
+
+  void _onAuthUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    widget.auth.removeListener(_onAuthUpdate);
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _tryOAuth(Future<void> Function() fn) async {
+    setState(() => _oauthBusy = true);
+    await fn();
+    if (mounted) setState(() => _oauthBusy = false);
   }
 
   Future<void> _submitEmail() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     if (email.isEmpty || password.isEmpty) return;
-    setState(() => _busy = true);
+    setState(() => _emailBusy = true);
     if (_mode == _EmailMode.signUp) {
       await widget.auth.signUpWithEmail(email: email, password: password);
     } else {
       await widget.auth.signInWithEmail(email: email, password: password);
     }
-    if (mounted) setState(() => _busy = false);
+    if (mounted) setState(() => _emailBusy = false);
   }
 
   Future<void> _forgotPassword() async {
@@ -496,6 +515,7 @@ class _SignInCardState extends State<_SignInCard> {
 
   @override
   Widget build(BuildContext context) {
+    final signedIn = widget.auth.user != null;
     return Padding(
       key: SignInScreen._signInKey,
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -515,96 +535,234 @@ class _SignInCardState extends State<_SignInCard> {
                 ),
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Sign in to Avokaido',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF0E2812),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Use your existing account — we never ask for passwords.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Colors.black54),
-                ),
-                const SizedBox(height: 24),
-
-                // Primary: OAuth providers.
-                _ProviderButton(
-                  label: 'Continue with GitHub',
-                  icon: Icons.code,
-                  onPressed: widget.auth.signInWithGithub,
-                ),
-                const SizedBox(height: 10),
-                _ProviderButton(
-                  label: 'Continue with Microsoft',
-                  icon: Icons.business,
-                  onPressed: widget.auth.signInWithMicrosoft,
-                ),
-                const SizedBox(height: 10),
-                _ProviderButton(
-                  label: 'Continue with Apple',
-                  icon: Icons.apple,
-                  onPressed: widget.auth.signInWithApple,
-                ),
-
-                const SizedBox(height: 18),
-
-                // Secondary: email + password, hidden behind a toggle.
-                if (!_showEmail)
-                  TextButton.icon(
-                    onPressed: () => setState(() => _showEmail = true),
-                    icon: const Icon(Icons.mail_outline, size: 16),
-                    label: const Text('Use email and password instead'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.black54,
-                      textStyle: const TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w500),
-                    ),
-                  )
-                else
-                  _EmailBlock(
-                    mode: _mode,
-                    emailController: _emailController,
-                    passwordController: _passwordController,
-                    busy: _busy,
-                    obscure: _obscure,
-                    onObscureToggle: () =>
-                        setState(() => _obscure = !_obscure),
-                    onModeToggle: () => setState(() => _mode =
-                        _mode == _EmailMode.signUp
-                            ? _EmailMode.signIn
-                            : _EmailMode.signUp),
-                    onSubmit: _submitEmail,
-                    onForgot: _forgotPassword,
-                    onHide: () => setState(() => _showEmail = false),
-                  ),
-
-                if (widget.auth.errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    widget.auth.errorMessage!,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.red, fontSize: 13),
-                  ),
-                ],
-                const SizedBox(height: 18),
-                const Text(
-                  'By continuing you agree to the Avokaido terms.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 11.5, color: Colors.black45),
-                ),
-              ],
-            ),
+            child: signedIn ? _buildSignedIn(context) : _buildSignedOut(),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSignedIn(BuildContext context) {
+    final auth = widget.auth;
+    final email = auth.user?.email ?? 'your account';
+    final (title, body, cta, target) = switch (auth.status) {
+      AuthStatus.signedOut => (
+          'Signed out',
+          'You were signed out. Sign in again to continue.',
+          null,
+          null,
+        ),
+      AuthStatus.signedInPending => (
+          "You're signed in",
+          'Loading your workspace…',
+          null,
+          null,
+        ),
+      AuthStatus.signedInNoWorkspace => (
+          "You're signed in",
+          'No workspace yet for $email. Create one to get started — you '
+              'will become the org admin for your email domain.',
+          'Create workspace',
+          '/create-workspace',
+        ),
+      AuthStatus.signedInWithWorkspace => (
+          "You're signed in",
+          auth.isOrgAdmin
+              ? 'Continue to your admin workspace.'
+              : 'Continue to download the desktop app.',
+          'Continue',
+          auth.isOrgAdmin ? '/workspace/costs' : '/workspace/download',
+        ),
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: SignInScreen._brandGreen.withAlpha(40),
+              child: Text(
+                (email.isNotEmpty ? email[0] : '?').toUpperCase(),
+                style: const TextStyle(
+                  color: SignInScreen._brandGreen,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0E2812),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    email,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.black54,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Text(
+          body,
+          style: const TextStyle(fontSize: 14, height: 1.5),
+        ),
+        if (auth.status == AuthStatus.signedInPending) ...[
+          const SizedBox(height: 20),
+          const Center(
+            child: SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+          ),
+        ],
+        if (cta != null && target != null) ...[
+          const SizedBox(height: 20),
+          FilledButton(
+            onPressed: () => context.go(target),
+            style: FilledButton.styleFrom(
+              backgroundColor: SignInScreen._brandGreen,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              textStyle:
+                  const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+            child: Text(cta),
+          ),
+        ],
+        const SizedBox(height: 10),
+        OutlinedButton(
+          onPressed: auth.signOut,
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            foregroundColor: const Color(0xFF0E2812),
+            side: BorderSide(color: SignInScreen._brandGreen.withAlpha(90)),
+          ),
+          child: const Text('Sign out'),
+        ),
+        if (auth.errorMessage != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            auth.errorMessage!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.red, fontSize: 13),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSignedOut() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'Sign in to Avokaido',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF0E2812),
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Use your existing account — we never ask for passwords.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, color: Colors.black54),
+        ),
+        const SizedBox(height: 24),
+        _ProviderButton(
+          label: 'Continue with GitHub',
+          icon: Icons.code,
+          loading: _oauthBusy,
+          onPressed:
+              _oauthBusy ? null : () => _tryOAuth(widget.auth.signInWithGithub),
+        ),
+        const SizedBox(height: 10),
+        _ProviderButton(
+          label: 'Continue with Google',
+          icon: Icons.g_mobiledata,
+          loading: _oauthBusy,
+          onPressed:
+              _oauthBusy ? null : () => _tryOAuth(widget.auth.signInWithGoogle),
+        ),
+        const SizedBox(height: 10),
+        _ProviderButton(
+          label: 'Continue with Microsoft',
+          icon: Icons.business,
+          loading: _oauthBusy,
+          onPressed: _oauthBusy
+              ? null
+              : () => _tryOAuth(widget.auth.signInWithMicrosoft),
+        ),
+        const SizedBox(height: 10),
+        _ProviderButton(
+          label: 'Continue with Apple',
+          icon: Icons.apple,
+          loading: _oauthBusy,
+          onPressed:
+              _oauthBusy ? null : () => _tryOAuth(widget.auth.signInWithApple),
+        ),
+        const SizedBox(height: 18),
+        if (!_showEmail)
+          TextButton.icon(
+            onPressed: () => setState(() => _showEmail = true),
+            icon: const Icon(Icons.mail_outline, size: 16),
+            label: const Text('Use email and password instead'),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black54,
+              textStyle:
+                  const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          )
+        else
+          _EmailBlock(
+            mode: _mode,
+            emailController: _emailController,
+            passwordController: _passwordController,
+            busy: _emailBusy,
+            obscure: _obscure,
+            onObscureToggle: () => setState(() => _obscure = !_obscure),
+            onModeToggle: () => setState(() => _mode =
+                _mode == _EmailMode.signUp
+                    ? _EmailMode.signIn
+                    : _EmailMode.signUp),
+            onSubmit: _submitEmail,
+            onForgot: _forgotPassword,
+            onHide: () => setState(() => _showEmail = false),
+          ),
+        if (widget.auth.errorMessage != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            widget.auth.errorMessage!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.red, fontSize: 13),
+          ),
+        ],
+        const SizedBox(height: 18),
+        const Text(
+          'By continuing you agree to the Avokaido terms.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 11.5, color: Colors.black45),
+        ),
+      ],
     );
   }
 }
@@ -754,18 +912,26 @@ class _ProviderButton extends StatelessWidget {
   const _ProviderButton({
     required this.label,
     required this.icon,
+    required this.loading,
     required this.onPressed,
   });
 
   final String label;
   final IconData icon;
-  final Future<void> Function() onPressed;
+  final bool loading;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon),
+      icon: loading
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(icon),
       label: Text(label),
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),

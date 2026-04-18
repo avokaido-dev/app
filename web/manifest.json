@@ -1,11 +1,11 @@
 {
-    "name": "avokaido_app",
-    "short_name": "avokaido_app",
+    "name": "Avokaido",
+    "short_name": "Avokaido",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F2F5EF",
+    "theme_color": "#2F6B3B",
+    "description": "Avokaido turns a ticket into a pull request. The dev platform that ships for you.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 
 import '../auth/auth_service.dart';
 
-/// Shown after sign-in when the user doesn't yet have a `workspaceId` claim.
-/// Single text field → calls the `createWorkspace` cloud function → refreshes
-/// the ID token so the router switches to the workspace shell.
+/// Shown after sign-in when no workspace yet exists for the caller's email
+/// domain. The user creating the workspace becomes the org admin; everyone
+/// else signing up later with the same domain auto-joins as a member via
+/// `resolveWorkspaceForUser` and never reaches this screen.
 class CreateWorkspaceScreen extends StatefulWidget {
   const CreateWorkspaceScreen({super.key, required this.auth});
   final AuthService auth;
@@ -18,6 +19,14 @@ class _CreateWorkspaceScreenState extends State<CreateWorkspaceScreen> {
   final _nameController = TextEditingController();
   bool _creating = false;
   String? _error;
+
+  String? get _emailDomain {
+    final email = widget.auth.user?.email;
+    if (email == null) return null;
+    final at = email.lastIndexOf('@');
+    if (at <= 0 || at == email.length - 1) return null;
+    return email.substring(at + 1).toLowerCase();
+  }
 
   @override
   void dispose() {
@@ -75,10 +84,16 @@ class _CreateWorkspaceScreenState extends State<CreateWorkspaceScreen> {
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'A workspace is where you and your team collaborate. '
-                  'You can invite teammates once it exists.',
-                  style: TextStyle(color: Colors.black54),
+                Text(
+                  _emailDomain == null
+                      ? 'You will become the org admin for your workspace. '
+                          'Anyone who signs up with the same email domain '
+                          'afterwards joins automatically as a member.'
+                      : 'You will become the org admin for @$_emailDomain. '
+                          'Anyone else who signs up with an @$_emailDomain '
+                          'email afterwards joins this workspace as a member '
+                          'automatically.',
+                  style: const TextStyle(color: Colors.black54),
                 ),
                 const SizedBox(height: 24),
                 TextField(

@@ -11,7 +11,9 @@ import 'auth/sign_in_screen.dart';
 import 'firebase_options.dart';
 import 'invite/invite_landing_screen.dart';
 import 'onboarding/create_workspace_screen.dart';
-import 'workspace/overview_screen.dart';
+import 'workspace/costs_screen.dart';
+import 'workspace/download_screen.dart';
+import 'workspace/releases_screen.dart';
 import 'workspace/settings_screen.dart';
 import 'workspace/team_screen.dart';
 import 'workspace/workspace_shell.dart';
@@ -40,9 +42,18 @@ class AvokaidoApp extends StatefulWidget {
 }
 
 class _AvokaidoAppState extends State<AvokaidoApp> {
+  static const _adminHome = '/workspace/costs';
+  static const _memberHome = '/workspace/download';
+  static const _adminOnlyRoutes = <String>{
+    '/workspace/costs',
+    '/workspace/team',
+    '/workspace/releases',
+    '/workspace/settings',
+  };
+
   late final GoRouter _router = GoRouter(
     refreshListenable: widget.auth,
-    initialLocation: '/workspace/overview',
+    initialLocation: _adminHome,
     redirect: (context, state) {
       final loc = state.matchedLocation;
 
@@ -59,8 +70,18 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
         case AuthStatus.signedInNoWorkspace:
           return loc == '/create-workspace' ? null : '/create-workspace';
         case AuthStatus.signedInWithWorkspace:
+          final home =
+              widget.auth.isOrgAdmin ? _adminHome : _memberHome;
           if (loc == '/signin' || loc == '/create-workspace') {
-            return '/workspace/overview';
+            return home;
+          }
+          // Members can't reach admin-only screens.
+          if (!widget.auth.isOrgAdmin && _adminOnlyRoutes.contains(loc)) {
+            return _memberHome;
+          }
+          // Admins hitting the member download redirect to their home.
+          if (widget.auth.isOrgAdmin && loc == _memberHome) {
+            return _adminHome;
           }
           return null;
       }
@@ -84,16 +105,24 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
             WorkspaceShell(auth: widget.auth, child: child),
         routes: [
           GoRoute(
-            path: '/workspace/overview',
-            builder: (_, __) => OverviewScreen(auth: widget.auth),
+            path: '/workspace/costs',
+            builder: (_, __) => CostsScreen(auth: widget.auth),
           ),
           GoRoute(
             path: '/workspace/team',
             builder: (_, __) => TeamScreen(auth: widget.auth),
           ),
           GoRoute(
+            path: '/workspace/releases',
+            builder: (_, __) => ReleasesScreen(auth: widget.auth),
+          ),
+          GoRoute(
             path: '/workspace/settings',
             builder: (_, __) => SettingsScreen(auth: widget.auth),
+          ),
+          GoRoute(
+            path: '/workspace/download',
+            builder: (_, __) => DownloadScreen(auth: widget.auth),
           ),
         ],
       ),

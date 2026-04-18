@@ -8,21 +8,40 @@ class WorkspaceShell extends StatelessWidget {
   final Widget child;
   final AuthService auth;
 
-  static const _destinations = [
-    _NavItem('/workspace/overview', Icons.dashboard_outlined, 'Overview'),
+  static const _adminDestinations = [
+    _NavItem('/workspace/costs', Icons.payments_outlined, 'Costs'),
     _NavItem('/workspace/team', Icons.group_outlined, 'Team'),
+    _NavItem('/workspace/releases', Icons.system_update_outlined, 'Releases'),
     _NavItem('/workspace/settings', Icons.settings_outlined, 'Settings'),
+  ];
+
+  static const _memberDestinations = [
+    _NavItem('/workspace/download', Icons.download_outlined, 'Get the app'),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final destinations =
+        auth.isOrgAdmin ? _adminDestinations : _memberDestinations;
     final location = GoRouterState.of(context).uri.path;
     final selectedIndex =
-        _destinations.indexWhere((d) => location.startsWith(d.route));
+        destinations.indexWhere((d) => location.startsWith(d.route));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Avokaido'),
+        title: Row(
+          children: [
+            const Text('Avokaido'),
+            if (auth.isOrgAdmin) ...[
+              const SizedBox(width: 12),
+              const Chip(
+                label: Text('Admin', style: TextStyle(fontSize: 11)),
+                avatar: Icon(Icons.shield_outlined, size: 14),
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ],
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -42,20 +61,21 @@ class WorkspaceShell extends StatelessWidget {
       ),
       body: Row(
         children: [
-          NavigationRail(
-            selectedIndex: selectedIndex < 0 ? 0 : selectedIndex,
-            labelType: NavigationRailLabelType.all,
-            onDestinationSelected: (i) =>
-                context.go(_destinations[i].route),
-            destinations: [
-              for (final d in _destinations)
-                NavigationRailDestination(
-                  icon: Icon(d.icon),
-                  label: Text(d.label),
-                ),
-            ],
-          ),
-          const VerticalDivider(width: 1),
+          if (destinations.length > 1)
+            NavigationRail(
+              selectedIndex: selectedIndex < 0 ? 0 : selectedIndex,
+              labelType: NavigationRailLabelType.all,
+              onDestinationSelected: (i) =>
+                  context.go(destinations[i].route),
+              destinations: [
+                for (final d in destinations)
+                  NavigationRailDestination(
+                    icon: Icon(d.icon),
+                    label: Text(d.label),
+                  ),
+              ],
+            ),
+          if (destinations.length > 1) const VerticalDivider(width: 1),
           Expanded(child: child),
         ],
       ),
