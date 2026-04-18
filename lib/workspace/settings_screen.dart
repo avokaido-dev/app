@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -42,6 +43,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     for (final p in _providers) p.id: false,
   };
 
+  // Workspace integrations
+  final _githubTokenController = TextEditingController();
+  final _linearApiKeyController = TextEditingController();
+  bool _hasGithubToken = false;
+  bool _hasLinearApiKey = false;
+
+  // Repository access
+  final List<TextEditingController> _repoControllers = [];
+  List<_WorkspaceMemberAccess> _workspaceMembers = const [];
+  Map<String, Set<String>> _repoAccessByUser = {};
+
   // Budgets
   final _dailyLimitController = TextEditingController();
   final _monthlyLimitController = TextEditingController();
@@ -64,16 +76,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _loaded = false;
   bool _savingName = false;
   bool _savingKeys = false;
+  bool _savingIntegrations = false;
+  bool _savingRepoAccess = false;
+  bool _importingRepos = false;
   bool _savingBudgets = false;
   bool _savingModels = false;
   bool _savingRouting = false;
+  bool _loadingAdminConfig = false;
+  String? _adminConfigWorkspaceId;
   String? _error;
   String? _notice;
+
+  static final RegExp _repoSlugRe =
+      RegExp(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$');
 
   @override
   void dispose() {
     _nameController.dispose();
+    _githubTokenController.dispose();
+    _linearApiKeyController.dispose();
     for (final c in _keyControllers.values) {
+      c.dispose();
+    }
+    for (final c in _repoControllers) {
       c.dispose();
     }
     _dailyLimitController.dispose();
@@ -255,11 +280,232 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _setRepoControllers(List<String> repos) {
+    for (final controller in _repoControllers) {
+      controller.dispose();
+    }
+    _repoControllers
+      ..clear()
+      ..addAll(
+        (repos.isEmpty ? [''] : repos).map((repo) => TextEditingController(text: repo)),
+      );
+  }
+
+  Future<void> _loadAdminConfig(String wsId) async {
+    if (_loadingAdminConfig && _adminConfigWorkspaceId == wsId) return;
+    setState(() {
+      _loadingAdminConfig = true;
+      _adminConfigWorkspaceId = wsId;
+    });
+    try {
+      final membersFuture = FirebaseFunctions.instance
+          .httpsCallable('listWorkspaceMembers')
+          .call<Map<String, dynamic>>({'workspaceId': wsId});
+      final integrationsFuture = FirebaseFunctions.instance
+          .httpsCallable('getWorkspaceIntegrationStatus')
+          .call<Map<String, dynamic>>({'workspaceId': wsId});
+      final repoAccessFuture = FirebaseFunctions.instance
+          .httpsCallable('getWorkspaceRepoAccess')
+          .call<Map<String, dynamic>>({'workspaceId': wsId});
+
+      final results = await Future.wait([
+        membersFuture,
+        integrationsFuture,
+        repoAccessFuture,
+      ]);
+
+      final rawMembers = (results[0].data['members'] as List?) ?? const [];
+      final members = rawMembers
+          .map((m) => _WorkspaceMemberAccess.fromJson(
+              Map<String, dynamic>.from(m as Map)))
+          .toList()
+        ..sort((a, b) {
+          if (a.workspaceRole != b.workspaceRole) {
+            return a.workspaceRole == 'admin' ? -1 : 1;
+          }
+          return (a.email ?? a.uid).compareTo(b.email ?? b.uid);
+        });
+
+      final integrations = results[1].data;
+      final rawRepos = (results[2].data['repos'] as List?) ?? const [];
+      final repos = rawRepos
+          .map((value) => value?.toString().trim() ?? '')
+          .where((value) => value.isNotEmpty)
+          .toList();
+      final rawRepoAccess =
+          (results[2].data['repoAccessByUser'] as Map?) ?? const {};
+      final repoSet = repos.toSet();
+      final repoAccessByUser = <String, Set<String>>{
+        for (final entry in rawRepoAccess.entries)
+          entry.key.toString(): ((entry.value as List?) ?? const [])
+              .map((value) => value?.toString().trim() ?? '')
+              .where((value) => repoSet.contains(value))
+              .toSet(),
+      };
+
+      if (!mounted) return;
+      setState(() {
+        _workspaceMembers = members;
+        _hasGithubToken = integrations['hasGithubToken'] as bool? ?? false;
+        _hasLinearApiKey = integrations['hasLinearApiKey'] as bool? ?? false;
+        _setRepoControllers(repos);
+        _repoAccessByUser = repoAccessByUser;
+      });
+    } on FirebaseFunctionsException catch (e) {
+      if (mounted) setState(() => _error = e.message ?? e.code);
+    } catch (e) {
+      if (mounted) setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _loadingAdminConfig = false);
+    }
+  }
+
+  Future<void> _saveIntegrations() async {
+    final wsId = widget.auth.workspaceId;
+    if (wsId == null) return;
+    await _saveSection(
+      'Workspace integrations saved.',
+      () async {
+        final result = await FirebaseFunctions.instance
+            .httpsCallable('saveWorkspaceIntegrationSecrets')
+            .call<Map<String, dynamic>>({
+          'workspaceId': wsId,
+          'githubToken': _githubTokenController.text.trim(),
+          'linearApiKey': _linearApiKeyController.text.trim(),
+        });
+        _hasGithubToken = result.data['hasGithubToken'] as bool? ?? false;
+        _hasLinearApiKey = result.data['hasLinearApiKey'] as bool? ?? false;
+        _githubTokenController.clear();
+        _linearApiKeyController.clear();
+      },
+      (v) => _savingIntegrations = v,
+    );
+  }
+
+  void _addRepoField() {
+    setState(() => _repoControllers.add(TextEditingController()));
+  }
+
+  void _removeRepoField(int index) {
+    final controller = _repoControllers.removeAt(index);
+    controller.dispose();
+    if (_repoControllers.isEmpty) {
+      _repoControllers.add(TextEditingController());
+    }
+    setState(() {
+      final repos = _currentRepoSlugs();
+      for (final entry in _repoAccessByUser.entries) {
+        entry.value.removeWhere((repo) => !repos.contains(repo));
+      }
+    });
+  }
+
+  List<String> _currentRepoSlugs() {
+    final seen = <String>{};
+    final repos = <String>[];
+    for (final controller in _repoControllers) {
+      final value = controller.text.trim();
+      if (value.isEmpty || !seen.add(value)) continue;
+      repos.add(value);
+    }
+    return repos;
+  }
+
+  Future<void> _saveRepoAccess() async {
+    final wsId = widget.auth.workspaceId;
+    if (wsId == null) return;
+    final repos = _currentRepoSlugs();
+    final invalid = repos.where((repo) => !_repoSlugRe.hasMatch(repo)).toList();
+    if (invalid.isNotEmpty) {
+      setState(() {
+        _error =
+            'Repositories must use owner/repo format. Invalid: ${invalid.join(', ')}';
+        _notice = null;
+      });
+      return;
+    }
+    final repoSet = repos.toSet();
+    final payload = <String, List<String>>{
+      for (final member in _workspaceMembers)
+        member.uid: (_repoAccessByUser[member.uid] ?? const <String>{})
+            .where(repoSet.contains)
+            .toList()
+          ..sort(),
+    };
+    await _saveSection(
+      'Repository access saved.',
+      () async {
+        final result = await FirebaseFunctions.instance
+            .httpsCallable('saveWorkspaceRepoAccess')
+            .call<Map<String, dynamic>>({
+          'workspaceId': wsId,
+          'repos': repos,
+          'repoAccessByUser': payload,
+        });
+        final savedRepos = ((result.data['repos'] as List?) ?? const [])
+            .map((value) => value?.toString().trim() ?? '')
+            .where((value) => value.isNotEmpty)
+            .toList();
+        final savedRepoSet = savedRepos.toSet();
+        final savedRawAccess =
+            (result.data['repoAccessByUser'] as Map?) ?? const {};
+        _setRepoControllers(savedRepos);
+        _repoAccessByUser = {
+          for (final entry in savedRawAccess.entries)
+            entry.key.toString(): ((entry.value as List?) ?? const [])
+                .map((value) => value?.toString().trim() ?? '')
+                .where((value) => savedRepoSet.contains(value))
+                .toSet(),
+        };
+      },
+      (v) => _savingRepoAccess = v,
+    );
+  }
+
+  Future<void> _importGithubRepos() async {
+    final wsId = widget.auth.workspaceId;
+    if (wsId == null) return;
+    setState(() {
+      _importingRepos = true;
+      _error = null;
+      _notice = null;
+    });
+    try {
+      final result = await FirebaseFunctions.instance
+          .httpsCallable('importWorkspaceGithubRepos')
+          .call<Map<String, dynamic>>({'workspaceId': wsId});
+      final repos = ((result.data['repos'] as List?) ?? const [])
+          .map((value) => value?.toString().trim() ?? '')
+          .where((value) => value.isNotEmpty)
+          .toList();
+      final repoSet = repos.toSet();
+      if (!mounted) return;
+      setState(() {
+        _setRepoControllers(repos);
+        for (final entry in _repoAccessByUser.entries) {
+          entry.value.removeWhere((repo) => !repoSet.contains(repo));
+        }
+        _notice = repos.isEmpty
+            ? 'GitHub import returned no accessible repositories.'
+            : 'Imported ${repos.length} repositories from GitHub.';
+      });
+    } on FirebaseFunctionsException catch (e) {
+      if (mounted) setState(() => _error = e.message ?? e.code);
+    } catch (e) {
+      if (mounted) setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _importingRepos = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final wsId = widget.auth.workspaceId;
     if (wsId == null) return const SizedBox.shrink();
     final canEdit = widget.auth.isOrgAdmin;
+    if (canEdit && _adminConfigWorkspaceId != wsId && !_loadingAdminConfig) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadAdminConfig(wsId));
+    }
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: _wsRef().snapshots(),
@@ -308,6 +554,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onClear: (id) =>
                     setState(() => _keyControllers[id]!.clear()),
                 onSave: _saveKeys,
+              ),
+              const SizedBox(height: 20),
+              _IntegrationsCard(
+                githubTokenController: _githubTokenController,
+                linearApiKeyController: _linearApiKeyController,
+                hasGithubToken: _hasGithubToken,
+                hasLinearApiKey: _hasLinearApiKey,
+                canEdit: canEdit,
+                saving: _savingIntegrations,
+                loading: _loadingAdminConfig,
+                onSave: _saveIntegrations,
+              ),
+              const SizedBox(height: 20),
+              _RepoAccessCard(
+                repoControllers: _repoControllers,
+                members: _workspaceMembers,
+                repoAccessByUser: _repoAccessByUser,
+                canEdit: canEdit,
+                loading: _loadingAdminConfig,
+                saving: _savingRepoAccess,
+                importing: _importingRepos,
+                currentUserUid: widget.auth.user?.uid,
+                onAddRepo: _addRepoField,
+                onImportGithubRepos: _importGithubRepos,
+                onRemoveRepo: _removeRepoField,
+                onToggleAccess: (uid, repo, enabled) => setState(() {
+                  final set = _repoAccessByUser.putIfAbsent(uid, () => <String>{});
+                  if (enabled) {
+                    set.add(repo);
+                  } else {
+                    set.remove(repo);
+                  }
+                }),
+                onSave: _saveRepoAccess,
               ),
               const SizedBox(height: 20),
               _BudgetsCard(
@@ -634,6 +914,360 @@ class _ProviderKeyRowState extends State<_ProviderKeyRow> {
 }
 
 // ---------------------------------------------------------------------------
+// Section: workspace integrations
+// ---------------------------------------------------------------------------
+
+class _IntegrationsCard extends StatelessWidget {
+  const _IntegrationsCard({
+    required this.githubTokenController,
+    required this.linearApiKeyController,
+    required this.hasGithubToken,
+    required this.hasLinearApiKey,
+    required this.canEdit,
+    required this.saving,
+    required this.loading,
+    required this.onSave,
+  });
+
+  final TextEditingController githubTokenController;
+  final TextEditingController linearApiKeyController;
+  final bool hasGithubToken;
+  final bool hasLinearApiKey;
+  final bool canEdit;
+  final bool saving;
+  final bool loading;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SectionCard(
+      title: 'Workspace integrations',
+      subtitle:
+          'Securely store organisation-level GitHub and Linear credentials '
+          'for this workspace. Saved secrets are not shown again here; '
+          'enter a new value to rotate or clear one.',
+      child: loading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _SecretField(
+                  controller: githubTokenController,
+                  label: 'GitHub token',
+                  enabled: canEdit,
+                  configured: hasGithubToken,
+                ),
+                const SizedBox(height: 12),
+                _SecretField(
+                  controller: linearApiKeyController,
+                  label: 'Linear API key',
+                  enabled: canEdit,
+                  configured: hasLinearApiKey,
+                ),
+                if (canEdit) ...[
+                  const SizedBox(height: 8),
+                  _SaveButton(
+                    saving: saving,
+                    onSave: onSave,
+                    label: 'Save integrations',
+                  ),
+                ],
+              ],
+            ),
+    );
+  }
+}
+
+class _SecretField extends StatefulWidget {
+  const _SecretField({
+    required this.controller,
+    required this.label,
+    required this.enabled,
+    required this.configured,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final bool enabled;
+  final bool configured;
+
+  @override
+  State<_SecretField> createState() => _SecretFieldState();
+}
+
+class _SecretFieldState extends State<_SecretField> {
+  bool _obscure = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: widget.controller,
+          enabled: widget.enabled,
+          obscureText: _obscure,
+          decoration: InputDecoration(
+            labelText: widget.label,
+            hintText: widget.configured
+                ? 'Configured. Enter a new value to rotate or clear.'
+                : 'Not configured yet',
+            border: const OutlineInputBorder(),
+            isDense: true,
+            suffixIcon: IconButton(
+              tooltip: _obscure ? 'Show' : 'Hide',
+              onPressed: () => setState(() => _obscure = !_obscure),
+              icon: Icon(
+                _obscure
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+              ),
+            ),
+          ),
+          style: const TextStyle(fontFamily: 'monospace'),
+        ),
+        const SizedBox(height: 6),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Chip(
+            label: Text(
+              widget.configured ? 'Configured' : 'Not configured',
+              style: const TextStyle(fontSize: 11),
+            ),
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Section: repository access
+// ---------------------------------------------------------------------------
+
+class _RepoAccessCard extends StatelessWidget {
+  const _RepoAccessCard({
+    required this.repoControllers,
+    required this.members,
+    required this.repoAccessByUser,
+    required this.canEdit,
+    required this.loading,
+    required this.saving,
+    required this.importing,
+    required this.currentUserUid,
+    required this.onAddRepo,
+    required this.onImportGithubRepos,
+    required this.onRemoveRepo,
+    required this.onToggleAccess,
+    required this.onSave,
+  });
+
+  final List<TextEditingController> repoControllers;
+  final List<_WorkspaceMemberAccess> members;
+  final Map<String, Set<String>> repoAccessByUser;
+  final bool canEdit;
+  final bool loading;
+  final bool saving;
+  final bool importing;
+  final String? currentUserUid;
+  final VoidCallback onAddRepo;
+  final VoidCallback onImportGithubRepos;
+  final void Function(int index) onRemoveRepo;
+  final void Function(String uid, String repo, bool enabled) onToggleAccess;
+  final VoidCallback onSave;
+
+  List<String> get _repos {
+    final seen = <String>{};
+    final values = <String>[];
+    for (final controller in repoControllers) {
+      final value = controller.text.trim();
+      if (value.isEmpty || !seen.add(value)) continue;
+      values.add(value);
+    }
+    return values;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final repos = _repos;
+    return _SectionCard(
+      title: 'GitHub repositories and access',
+      subtitle:
+          'List the repositories this workspace can use, then choose which '
+          'members can access each one.',
+      child: loading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < repoControllers.length; i++) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: repoControllers[i],
+                          enabled: canEdit,
+                          decoration: const InputDecoration(
+                            labelText: 'GitHub repository',
+                            hintText: 'owner/repository',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                          style: const TextStyle(fontFamily: 'monospace'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        tooltip: 'Remove repository',
+                        onPressed: canEdit ? () => onRemoveRepo(i) : null,
+                        icon: const Icon(Icons.delete_outline),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (canEdit)
+                  Row(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: onAddRepo,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add repository'),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        onPressed: importing ? null : onImportGithubRepos,
+                        icon: importing
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.sync),
+                        label: Text(
+                          importing ? 'Importing…' : 'Import from GitHub',
+                        ),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 8),
+                if (members.isEmpty)
+                  const Text(
+                    'Invite teammates first to assign repository access.',
+                    style: TextStyle(color: Colors.black54),
+                  )
+                else if (repos.isEmpty)
+                  const Text(
+                    'Add at least one repository to configure member access.',
+                    style: TextStyle(color: Colors.black54),
+                  )
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Member access',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 8),
+                      for (final member in members) ...[
+                        _MemberRepoAccessRow(
+                          member: member,
+                          repos: repos,
+                          selectedRepos:
+                              repoAccessByUser[member.uid] ?? const <String>{},
+                          enabled: canEdit,
+                          isCurrentUser: member.uid == currentUserUid,
+                          onToggle: (repo, enabled) =>
+                              onToggleAccess(member.uid, repo, enabled),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ],
+                  ),
+                if (canEdit)
+                  _SaveButton(
+                    saving: saving,
+                    onSave: onSave,
+                    label: 'Save repository access',
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+class _MemberRepoAccessRow extends StatelessWidget {
+  const _MemberRepoAccessRow({
+    required this.member,
+    required this.repos,
+    required this.selectedRepos,
+    required this.enabled,
+    required this.isCurrentUser,
+    required this.onToggle,
+  });
+
+  final _WorkspaceMemberAccess member;
+  final List<String> repos;
+  final Set<String> selectedRepos;
+  final bool enabled;
+  final bool isCurrentUser;
+  final void Function(String repo, bool enabled) onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  member.email ?? member.uid,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ),
+              if (isCurrentUser)
+                const Chip(
+                  label: Text('You', style: TextStyle(fontSize: 11)),
+                  visualDensity: VisualDensity.compact,
+                ),
+              if (member.workspaceRole == 'admin') ...[
+                const SizedBox(width: 8),
+                const Chip(
+                  label: Text('Org admin', style: TextStyle(fontSize: 11)),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final repo in repos)
+                FilterChip(
+                  label: Text(repo),
+                  selected: selectedRepos.contains(repo),
+                  onSelected: enabled ? (v) => onToggle(repo, v) : null,
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Section: budgets
 // ---------------------------------------------------------------------------
 
@@ -764,6 +1398,26 @@ class _MoneyField extends StatelessWidget {
         isDense: true,
         suffixText: suffix,
       ),
+    );
+  }
+}
+
+class _WorkspaceMemberAccess {
+  const _WorkspaceMemberAccess({
+    required this.uid,
+    required this.email,
+    required this.workspaceRole,
+  });
+
+  final String uid;
+  final String? email;
+  final String workspaceRole;
+
+  factory _WorkspaceMemberAccess.fromJson(Map<String, dynamic> json) {
+    return _WorkspaceMemberAccess(
+      uid: json['uid'] as String? ?? '',
+      email: json['email'] as String?,
+      workspaceRole: json['workspaceRole'] as String? ?? 'member',
     );
   }
 }
