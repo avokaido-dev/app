@@ -12,6 +12,7 @@ import 'firebase_options.dart';
 import 'investors/investors_screen.dart';
 import 'invite/invite_landing_screen.dart';
 import 'onboarding/create_workspace_screen.dart';
+import 'tutorial/tutorial_screen.dart';
 import 'workspace/costs_screen.dart';
 import 'workspace/download_screen.dart';
 import 'workspace/releases_screen.dart';
@@ -61,6 +62,7 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
       // Public pages stay public regardless of auth state.
       if (loc.startsWith('/invite/')) return null;
       if (loc == '/investors') return null;
+      if (loc == '/tutorial') return null;
 
       switch (widget.auth.status) {
         case AuthStatus.signedOut:
@@ -96,6 +98,10 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
       GoRoute(
         path: '/investors',
         builder: (_, __) => const InvestorsScreen(),
+      ),
+      GoRoute(
+        path: '/tutorial',
+        builder: (_, __) => const TutorialScreen(),
       ),
       GoRoute(
         path: '/invite/:token',

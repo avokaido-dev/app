@@ -60,6 +60,15 @@ class _InvestorTopBar extends StatelessWidget {
           ),
           const Spacer(),
           TextButton(
+            onPressed: () => context.go('/tutorial'),
+            style: TextButton.styleFrom(
+              foregroundColor: Brand.darkGreen,
+              textStyle:
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            child: const Text('Tutorial'),
+          ),
+          TextButton(
             onPressed: () => context.go('/signin'),
             style: TextButton.styleFrom(
               foregroundColor: Brand.darkGreen,

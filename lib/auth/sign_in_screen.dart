@@ -23,10 +23,6 @@ class SignInScreen extends StatelessWidget {
           children: [
             _TopBar(onSignInPressed: () => _scrollToSignIn(context)),
             const _Hero(),
-            const PitchProblem(),
-            const PitchProcessToday(),
-            const PitchProcessWithAvokaido(),
-            const PitchBuildersBridge(),
             const PitchSolution(),
             const PitchSegments(),
             const PitchPricing(),
@@ -73,6 +69,15 @@ class _TopBar extends StatelessWidget {
             ),
           ),
           const Spacer(),
+          TextButton(
+            onPressed: () => context.go('/tutorial'),
+            style: TextButton.styleFrom(
+              foregroundColor: Brand.darkGreen,
+              textStyle:
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            child: const Text('Tutorial'),
+          ),
           TextButton(
             onPressed: () => context.go('/investors'),
             style: TextButton.styleFrom(
@@ -160,9 +165,9 @@ class _Hero extends StatelessWidget {
                     ),
                   ),
                   OutlinedButton.icon(
-                    onPressed: () => context.go('/investors'),
-                    icon: const Icon(Icons.trending_up, size: 18),
-                    label: const Text('For investors'),
+                    onPressed: () => context.go('/tutorial'),
+                    icon: const Icon(Icons.play_circle_outline, size: 18),
+                    label: const Text('See the tutorial'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Brand.green,
                       side: BorderSide(color: Brand.green.withAlpha(120)),
@@ -784,6 +789,14 @@ class _Footer extends StatelessWidget {
             runSpacing: 8,
             alignment: WrapAlignment.center,
             children: [
+              TextButton(
+                onPressed: () => context.go('/tutorial'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Brand.darkGreen,
+                  textStyle: const TextStyle(fontSize: 13),
+                ),
+                child: const Text('Tutorial'),
+              ),
               TextButton(
                 onPressed: () => context.go('/investors'),
                 style: TextButton.styleFrom(
