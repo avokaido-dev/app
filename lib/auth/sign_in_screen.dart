@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../marketing/pitch_sections.dart';
 import 'auth_service.dart';
 
 /// Public landing page for avokaido-app.web.app.
@@ -12,24 +13,23 @@ class SignInScreen extends StatelessWidget {
   const SignInScreen({super.key, required this.auth});
   final AuthService auth;
 
-  static const _brandGreen = Color(0xFF2F6B3B);
-  static const _brandBg = Color(0xFFF2F5EF);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _brandBg,
+      backgroundColor: Brand.bg,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _TopBar(onSignInPressed: () => _scrollToSignIn(context)),
             const _Hero(),
-            const SizedBox(height: 48),
-            const _FeatureGrid(),
-            const SizedBox(height: 64),
-            _HowItWorks(),
-            const SizedBox(height: 64),
+            const PitchProblem(),
+            const PitchProcessToday(),
+            const PitchProcessWithAvokaido(),
+            const PitchLovableBridge(),
+            const PitchSolution(),
+            const PitchSegments(),
+            const PitchPricing(),
             _SignInCard(auth: auth),
             const SizedBox(height: 48),
             const _Footer(),
@@ -40,8 +40,6 @@ class SignInScreen extends StatelessWidget {
   }
 
   void _scrollToSignIn(BuildContext context) {
-    // Crude but effective for a one-page landing: scroll to bottom where
-    // the sign-in card lives.
     Scrollable.ensureVisible(
       _signInKey.currentContext ?? context,
       duration: const Duration(milliseconds: 400),
@@ -71,14 +69,24 @@ class _TopBar extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: SignInScreen._brandGreen,
+              color: Brand.green,
             ),
           ),
           const Spacer(),
+          TextButton(
+            onPressed: () => context.go('/investors'),
+            style: TextButton.styleFrom(
+              foregroundColor: Brand.darkGreen,
+              textStyle:
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            child: const Text('For investors'),
+          ),
+          const SizedBox(width: 8),
           FilledButton(
             onPressed: onSignInPressed,
             style: FilledButton.styleFrom(
-              backgroundColor: SignInScreen._brandGreen,
+              backgroundColor: Brand.green,
               padding:
                   const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
@@ -103,25 +111,25 @@ class _Hero extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 64),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
+          constraints: const BoxConstraints(maxWidth: 820),
           child: Column(
             children: [
               const Text(
-                'The dev platform\nthat ships for you.',
+                'Lovable speed.\nEnterprise control.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 56,
                   fontWeight: FontWeight.w800,
                   height: 1.1,
-                  color: Color(0xFF0E2812),
+                  color: Brand.darkGreen,
                 ),
               ),
               const SizedBox(height: 24),
               const Text(
-                'Avokaido turns a ticket into a pull request. Plan, '
-                'implement, and verify across every repo in your workspace — '
-                'backed by Claude, GPT, and Gemini. Your team stays in the '
-                'loop; the grunt work gets done.',
+                'Avokaido is the AI development platform for teams that need '
+                'speed without losing control. Build with Lovable, operate '
+                'with us — we add the security, compliance, and quality '
+                'gates enterprises demand.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
@@ -144,7 +152,7 @@ class _Hero extends StatelessWidget {
                     icon: const Icon(Icons.rocket_launch_outlined, size: 18),
                     label: const Text('Create your workspace'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: SignInScreen._brandGreen,
+                      backgroundColor: Brand.green,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24, vertical: 16),
                       textStyle: const TextStyle(
@@ -152,15 +160,12 @@ class _Hero extends StatelessWidget {
                     ),
                   ),
                   OutlinedButton.icon(
-                    onPressed: () {
-                      // Link out to product docs once live; placeholder for now.
-                    },
-                    icon: const Icon(Icons.play_arrow_rounded, size: 20),
-                    label: const Text('See a demo'),
+                    onPressed: () => context.go('/investors'),
+                    icon: const Icon(Icons.trending_up, size: 18),
+                    label: const Text('For investors'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: SignInScreen._brandGreen,
-                      side: BorderSide(
-                          color: SignInScreen._brandGreen.withAlpha(120)),
+                      foregroundColor: Brand.green,
+                      side: BorderSide(color: Brand.green.withAlpha(120)),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24, vertical: 16),
                       textStyle: const TextStyle(
@@ -173,266 +178,6 @@ class _Hero extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Feature grid
-// ---------------------------------------------------------------------------
-
-class _FeatureGrid extends StatelessWidget {
-  const _FeatureGrid();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1040),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final wide = constraints.maxWidth > 820;
-              final features = [
-                _FeatureCard(
-                  icon: Icons.hub_outlined,
-                  title: 'Multi-repo orchestration',
-                  body: 'One cockpit for every repo in your workspace. '
-                      'Plan, implement, QA, and push to staging without '
-                      'juggling ten windows.',
-                ),
-                _FeatureCard(
-                  icon: Icons.auto_awesome_outlined,
-                  title: 'AI that actually ships',
-                  body: 'Hand off tickets to Claude or GPT. Watch them '
-                      'code, run your tests, and open a pull request '
-                      'while you review the plan.',
-                ),
-                _FeatureCard(
-                  icon: Icons.shield_outlined,
-                  title: 'Secure by default',
-                  body: 'Admin-managed API keys. Per-workspace settings '
-                      'locks. SSO for the whole team. Your keys never '
-                      'leave the org.',
-                ),
-              ];
-              return wide
-                  ? Row(
-                      children: [
-                        for (final f in features) ...[
-                          Expanded(child: f),
-                          if (f != features.last) const SizedBox(width: 20),
-                        ],
-                      ],
-                    )
-                  : Column(
-                      children: [
-                        for (final f in features) ...[
-                          f,
-                          if (f != features.last) const SizedBox(height: 20),
-                        ],
-                      ],
-                    );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FeatureCard extends StatelessWidget {
-  const _FeatureCard({
-    required this.icon,
-    required this.title,
-    required this.body,
-  });
-
-  final IconData icon;
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withAlpha(20)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: SignInScreen._brandGreen.withAlpha(30),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: SignInScreen._brandGreen, size: 22),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF0E2812),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            body,
-            style: const TextStyle(
-              fontSize: 14.5,
-              height: 1.5,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// How it works
-// ---------------------------------------------------------------------------
-
-class _HowItWorks extends StatelessWidget {
-  const _HowItWorks();
-
-  static const _steps = <(int, String, String)>[
-    (
-      1,
-      'Sign in',
-      'GitHub, Google, Microsoft, or Apple — use the account your team '
-          'already has. Email and password is also available as a fallback.',
-    ),
-    (
-      2,
-      'Create your workspace',
-      'Name it, invite your team, and connect your repos. You are the '
-          'workspace admin by default.',
-    ),
-    (
-      3,
-      'Ship',
-      'Download the desktop app, connect a ticket provider, and hand your '
-          'first ticket to the AI. Review the PR when it opens.',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 56),
-      color: Colors.white,
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1040),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'How it works',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF0E2812),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'From landing here to your first shipped ticket in under ten minutes.',
-                style: TextStyle(fontSize: 16, color: Colors.black54),
-              ),
-              const SizedBox(height: 32),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final wide = constraints.maxWidth > 720;
-                  final widgets = [
-                    for (final s in _steps)
-                      _StepTile(number: s.$1, title: s.$2, body: s.$3),
-                  ];
-                  return wide
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            for (final w in widgets) ...[
-                              Expanded(child: w),
-                              if (w != widgets.last) const SizedBox(width: 24),
-                            ],
-                          ],
-                        )
-                      : Column(
-                          children: [
-                            for (final w in widgets) ...[
-                              w,
-                              if (w != widgets.last) const SizedBox(height: 20),
-                            ],
-                          ],
-                        );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StepTile extends StatelessWidget {
-  const _StepTile({
-    required this.number,
-    required this.title,
-    required this.body,
-  });
-
-  final int number;
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: SignInScreen._brandGreen,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Text(
-            '$number',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0E2812),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          body,
-          style: const TextStyle(fontSize: 14.5, height: 1.5),
-        ),
-      ],
     );
   }
 }
@@ -517,9 +262,10 @@ class _SignInCardState extends State<_SignInCard> {
   Widget build(BuildContext context) {
     final signedIn = widget.auth.user != null;
     final awaitingEmailLink = widget.auth.pendingEmailLinkNeedsEmail;
-    return Padding(
+    return Container(
       key: SignInScreen._signInKey,
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      color: Brand.bg,
+      padding: const EdgeInsets.fromLTRB(32, 64, 32, 32),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 460),
@@ -557,7 +303,7 @@ class _SignInCardState extends State<_SignInCard> {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0E2812),
+            color: Brand.darkGreen,
           ),
         ),
         const SizedBox(height: 6),
@@ -582,7 +328,7 @@ class _SignInCardState extends State<_SignInCard> {
         FilledButton(
           onPressed: _emailBusy ? null : _completeEmailLink,
           style: FilledButton.styleFrom(
-            backgroundColor: SignInScreen._brandGreen,
+            backgroundColor: Brand.green,
             padding: const EdgeInsets.symmetric(vertical: 14),
             textStyle:
                 const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
@@ -658,11 +404,11 @@ class _SignInCardState extends State<_SignInCard> {
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundColor: SignInScreen._brandGreen.withAlpha(40),
+              backgroundColor: Brand.green.withAlpha(40),
               child: Text(
                 (email.isNotEmpty ? email[0] : '?').toUpperCase(),
                 style: const TextStyle(
-                  color: SignInScreen._brandGreen,
+                  color: Brand.green,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -677,7 +423,7 @@ class _SignInCardState extends State<_SignInCard> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF0E2812),
+                      color: Brand.darkGreen,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -714,7 +460,7 @@ class _SignInCardState extends State<_SignInCard> {
           FilledButton(
             onPressed: () => context.go(target),
             style: FilledButton.styleFrom(
-              backgroundColor: SignInScreen._brandGreen,
+              backgroundColor: Brand.green,
               padding: const EdgeInsets.symmetric(vertical: 14),
               textStyle:
                   const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
@@ -727,8 +473,8 @@ class _SignInCardState extends State<_SignInCard> {
           onPressed: auth.signOut,
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 14),
-            foregroundColor: const Color(0xFF0E2812),
-            side: BorderSide(color: SignInScreen._brandGreen.withAlpha(90)),
+            foregroundColor: Brand.darkGreen,
+            side: BorderSide(color: Brand.green.withAlpha(90)),
           ),
           child: const Text('Sign out'),
         ),
@@ -754,7 +500,7 @@ class _SignInCardState extends State<_SignInCard> {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0E2812),
+            color: Brand.darkGreen,
           ),
         ),
         const SizedBox(height: 6),
@@ -933,7 +679,7 @@ class _EmailBlock extends StatelessWidget {
         FilledButton(
           onPressed: busy ? null : onSubmit,
           style: FilledButton.styleFrom(
-            backgroundColor: SignInScreen._brandGreen,
+            backgroundColor: Brand.green,
             padding: const EdgeInsets.symmetric(vertical: 14),
             textStyle:
                 const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
@@ -1011,8 +757,8 @@ class _ProviderButton extends StatelessWidget {
       label: Text(label),
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        foregroundColor: const Color(0xFF0E2812),
-        side: BorderSide(color: SignInScreen._brandGreen.withAlpha(90)),
+        foregroundColor: Brand.darkGreen,
+        side: BorderSide(color: Brand.green.withAlpha(90)),
         textStyle:
             const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
       ),
@@ -1033,6 +779,22 @@ class _Footer extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
       child: Column(
         children: [
+          Wrap(
+            spacing: 20,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () => context.go('/investors'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Brand.darkGreen,
+                  textStyle: const TextStyle(fontSize: 13),
+                ),
+                child: const Text('For investors'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
           Text(
             '© ${DateTime.now().year} Avokaido',
             style: const TextStyle(fontSize: 12, color: Colors.black45),

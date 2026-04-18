@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'auth/auth_service.dart';
 import 'auth/sign_in_screen.dart';
 import 'firebase_options.dart';
+import 'investors/investors_screen.dart';
 import 'invite/invite_landing_screen.dart';
 import 'onboarding/create_workspace_screen.dart';
 import 'workspace/costs_screen.dart';
@@ -57,8 +58,9 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
     redirect: (context, state) {
       final loc = state.matchedLocation;
 
-      // Public invite landing stays public regardless of auth state.
+      // Public pages stay public regardless of auth state.
       if (loc.startsWith('/invite/')) return null;
+      if (loc == '/investors') return null;
 
       switch (widget.auth.status) {
         case AuthStatus.signedOut:
@@ -90,6 +92,10 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
       GoRoute(
         path: '/signin',
         builder: (_, __) => SignInScreen(auth: widget.auth),
+      ),
+      GoRoute(
+        path: '/investors',
+        builder: (_, __) => const InvestorsScreen(),
       ),
       GoRoute(
         path: '/invite/:token',
