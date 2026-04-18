@@ -91,7 +91,15 @@ class _BillingScreenState extends State<BillingScreen> {
       });
       final url = result.data['url'] as String?;
       if (url != null) {
-        web.window.open(url, '_self');
+        // Open in a new tab so the main app keeps its auth/workspace state.
+        // Webhook updates flow into the billing doc and the stream refreshes
+        // this screen when the user returns.
+        web.window.open(url, '_blank');
+        if (mounted) {
+          setState(() => _notice =
+              'Opened Stripe in a new tab. This page will update once '
+              'your payment method is saved.');
+        }
       }
     } on FirebaseFunctionsException catch (e) {
       setState(() => _error = e.message ?? 'Could not open billing portal.');
