@@ -183,14 +183,14 @@ class AuthService extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    _errorMessage = null;
+    clearError();
     try {
       await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
     } on FirebaseAuthException catch (e) {
-      _errorMessage = e.message ?? e.code;
+      _errorMessage = _mapAuthError(e);
       notifyListeners();
     }
   }
@@ -199,15 +199,43 @@ class AuthService extends ChangeNotifier {
     required String email,
     required String password,
   }) async {
-    _errorMessage = null;
+    clearError();
     try {
       await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
     } on FirebaseAuthException catch (e) {
-      _errorMessage = e.message ?? e.code;
+      _errorMessage = _mapAuthError(e);
       notifyListeners();
+    }
+  }
+
+  /// Firebase returns `invalid-credential` for any email/password failure
+  /// (wrong password, no account, or an OAuth-only account without a
+  /// password). Surface a clearer action so users know what to try next.
+  String _mapAuthError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-credential':
+      case 'wrong-password':
+      case 'user-not-found':
+        return "Couldn't sign in with that email + password. "
+            'If you originally signed up with Google, GitHub, Microsoft, '
+            'or Apple, use that button above. Otherwise, tap '
+            '"Forgot password?" to set one.';
+      case 'email-already-in-use':
+        return 'An account with this email already exists — sign in '
+            'instead, or use "Forgot password?" to reset it.';
+      case 'weak-password':
+        return 'Password is too weak. Use at least 6 characters.';
+      case 'invalid-email':
+        return "That doesn't look like a valid email address.";
+      case 'too-many-requests':
+        return 'Too many attempts. Wait a minute and try again.';
+      case 'network-request-failed':
+        return 'Network error — check your connection and try again.';
+      default:
+        return e.message ?? e.code;
     }
   }
 
