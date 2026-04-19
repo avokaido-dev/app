@@ -233,7 +233,7 @@ class _ProblemCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Process comparison: today's 6-step handoff chain and the Avokaido version.
+// Process comparison — merged before/after section.
 // ---------------------------------------------------------------------------
 
 class _Step {
@@ -254,30 +254,113 @@ const _processSteps = <_Step>[
   _Step(6, 'Deployment', 'Deploys to\nproduction', 'AUTOMATED', true),
 ];
 
-class PitchProcessToday extends StatelessWidget {
-  const PitchProcessToday({super.key});
+/// Combined before-and-after process section. Shows both chains in one scroll
+/// beat so the contrast is immediate — no need to remember what was above.
+class PitchProcessComparison extends StatelessWidget {
+  const PitchProcessComparison({super.key});
 
   @override
   Widget build(BuildContext context) {
     return PitchSection(
       background: const Color(0xFFE9EEF0),
+      verticalPadding: 72,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const PitchHeadline('How does the process look today?',
+          // ── header ──────────────────────────────────────────────────────
+          const PitchEyebrow('Before → After'),
+          const SizedBox(height: 16),
+          const PitchHeadline('From 6 handoffs to 1 integration point.',
               color: Brand.darkGreen),
           const SizedBox(height: 8),
           const PitchSubhead(
-            'The traditional path from business need to technical delivery.',
+            'The same six steps — four of them automated.',
             color: Colors.black54,
           ),
-          const SizedBox(height: 32),
-          _ProcessChain(greyed: false, highlightKept: false),
-          const SizedBox(height: 28),
+          const SizedBox(height: 48),
+
+          // ── stat row ────────────────────────────────────────────────────
+          LayoutBuilder(builder: (ctx, c) {
+            final wide = c.maxWidth > 640;
+            final stats = [
+              _StatBadge('6 → 1', 'handoffs', Brand.accent),
+              _StatBadge('4 of 6', 'steps automated', Brand.green),
+              _StatBadge('~80%', 'less coordination overhead', Brand.gold),
+            ];
+            return wide
+                ? Row(
+                    children: [
+                      for (final s in stats) ...[
+                        Expanded(child: s),
+                        if (s != stats.last) const SizedBox(width: 12),
+                      ],
+                    ],
+                  )
+                : Column(
+                    children: [
+                      for (final s in stats) ...[
+                        s,
+                        if (s != stats.last) const SizedBox(height: 8),
+                      ],
+                    ],
+                  );
+          }),
+          const SizedBox(height: 40),
+
+          // ── TODAY chain ─────────────────────────────────────────────────
+          _ChainLabel(
+            label: 'TODAY',
+            labelColor: Colors.black54,
+            description: 'Traditional path — every step needs a person.',
+          ),
+          const SizedBox(height: 12),
+          _ProcessChain(afterAvokaido: false),
+          const SizedBox(height: 16),
           _CalloutBar(
             color: Brand.gold,
-            text:
-                'Many handoffs = long lead times, high costs, and information loss.',
+            text: 'Many handoffs = long lead times, high costs, and information loss.',
+            icon: Icons.warning_amber_rounded,
+          ),
+          const SizedBox(height: 40),
+
+          // ── divider ─────────────────────────────────────────────────────
+          Row(children: [
+            const Expanded(child: Divider(thickness: 1)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: Brand.green,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'Avokaido replaces this',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4),
+                ),
+              ),
+            ),
+            const Expanded(child: Divider(thickness: 1)),
+          ]),
+          const SizedBox(height: 40),
+
+          // ── WITH AVOKAIDO chain ─────────────────────────────────────────
+          _ChainLabel(
+            label: 'WITH AVOKAIDO',
+            labelColor: Brand.green,
+            description: 'Business drives. AI builds. Engineers set the rules.',
+          ),
+          const SizedBox(height: 12),
+          _ProcessChain(afterAvokaido: true),
+          const SizedBox(height: 16),
+          _CalloutBar(
+            color: const Color(0xFF9BD3A6),
+            text: '4 of 6 steps automated  •  Business stays in control  •  Engineers configure quality gates.',
+            icon: Icons.check_circle_outline,
           ),
         ],
       ),
@@ -285,41 +368,93 @@ class PitchProcessToday extends StatelessWidget {
   }
 }
 
-class PitchProcessWithAvokaido extends StatelessWidget {
-  const PitchProcessWithAvokaido({super.key});
+class _StatBadge extends StatelessWidget {
+  const _StatBadge(this.value, this.label, this.color);
+  final String value;
+  final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return PitchSection(
-      background: const Color(0xFFE9EEF0),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border(left: BorderSide(color: color, width: 4)),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withAlpha(8),
+              blurRadius: 12,
+              offset: const Offset(0, 2)),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const PitchHeadline('What Avokaido eliminates.',
-              color: Brand.darkGreen),
-          const SizedBox(height: 8),
-          const PitchSubhead(
-            'Same six steps — but look at what disappears.',
-            color: Colors.black54,
-          ),
-          const SizedBox(height: 32),
-          _ProcessChain(greyed: true, highlightKept: true),
-          const SizedBox(height: 28),
-          _CalloutBar(
-            color: Brand.gold,
-            text:
-                '4 of 6 steps automated  •  Business stays in control  •  Engineers configure quality gates.',
-          ),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                  height: 1)),
+          const SizedBox(height: 4),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 12.5,
+                  color: Colors.black54,
+                  height: 1.3)),
         ],
       ),
+    );
+  }
+}
+
+class _ChainLabel extends StatelessWidget {
+  const _ChainLabel(
+      {required this.label,
+      required this.labelColor,
+      required this.description});
+  final String label;
+  final Color labelColor;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: labelColor.withAlpha(20),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: labelColor.withAlpha(80)),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.1,
+                color: labelColor),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            description,
+            style: const TextStyle(fontSize: 13, color: Colors.black54),
+          ),
+        ),
+      ],
     );
   }
 }
 
 class _ProcessChain extends StatelessWidget {
-  const _ProcessChain({required this.greyed, required this.highlightKept});
-  final bool greyed;
-  final bool highlightKept;
+  const _ProcessChain({required this.afterAvokaido});
+  final bool afterAvokaido;
 
   @override
   Widget build(BuildContext context) {
@@ -329,10 +464,10 @@ class _ProcessChain extends StatelessWidget {
         final tiles = [
           for (final s in _processSteps)
             _StepTile(
-                step: s,
-                greyed: greyed && !s.kept,
-                showTag: greyed,
-                highlightKept: highlightKept && s.kept),
+              step: s,
+              eliminated: afterAvokaido && !s.kept,
+              showTag: afterAvokaido,
+            ),
         ];
         if (!wide) {
           return Column(
@@ -350,10 +485,13 @@ class _ProcessChain extends StatelessWidget {
             for (var i = 0; i < tiles.length; i++) ...[
               Expanded(child: tiles[i]),
               if (i < tiles.length - 1)
-                const Padding(
-                  padding: EdgeInsets.only(top: 40),
-                  child: Icon(Icons.arrow_forward,
-                      size: 18, color: Colors.black45),
+                Padding(
+                  padding: const EdgeInsets.only(top: 40),
+                  child: Icon(
+                    Icons.arrow_forward,
+                    size: 18,
+                    color: afterAvokaido ? Brand.green.withAlpha(80) : Colors.black38,
+                  ),
                 ),
             ],
           ],
@@ -366,105 +504,155 @@ class _ProcessChain extends StatelessWidget {
 class _StepTile extends StatelessWidget {
   const _StepTile({
     required this.step,
-    required this.greyed,
+    required this.eliminated,
     required this.showTag,
-    required this.highlightKept,
   });
 
   final _Step step;
-  final bool greyed;
+  final bool eliminated;
   final bool showTag;
-  final bool highlightKept;
+
+  Color get _tagColor {
+    if (step.tag == 'KEEPS') return Brand.green;
+    if (step.tag == 'AI BUILDS') return const Color(0xFF7B5EA7);
+    if (step.tag == 'AUTO / ENG') return Brand.gold;
+    return Brand.accent; // AUTOMATED
+  }
 
   @override
   Widget build(BuildContext context) {
-    final circleColor =
-        greyed ? Colors.black26 : (highlightKept ? Brand.green : Brand.green);
-    final topBar = greyed ? Brand.accent : Brand.green;
-    final tagColor = step.tag == 'KEEPS' || step.tag == 'AUTOMATED' && step.kept
-        ? Brand.green
-        : Brand.accent;
-    final titleColor = greyed ? Colors.black45 : Brand.darkGreen;
-    final bodyColor = greyed ? Colors.black38 : Colors.black87;
+    final circleColor = eliminated ? Colors.black.withAlpha(50) : Brand.green;
+    final topBarColor = eliminated ? const Color(0xFFE0D0C8) : Brand.green;
+    final titleColor = eliminated ? Colors.black38 : Brand.darkGreen;
+    final bodyColor = eliminated ? Colors.black26 : Colors.black87;
+    final cardColor = eliminated ? const Color(0xFFF5F2F0) : Colors.white;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border(top: BorderSide(color: topBar, width: 4)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-                color: circleColor, shape: BoxShape.circle),
-            child: Text('${step.n}',
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15)),
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(10),
+            border: Border(top: BorderSide(color: topBarColor, width: 4)),
           ),
-          const SizedBox(height: 10),
-          Text(step.title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: titleColor)),
-          const SizedBox(height: 4),
-          Text(step.body,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.5, color: bodyColor, height: 1.3)),
-          if (showTag) ...[
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              decoration: BoxDecoration(
-                color: tagColor,
-                borderRadius: BorderRadius.circular(4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                decoration:
+                    BoxDecoration(color: circleColor, shape: BoxShape.circle),
+                child: Text('${step.n}',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15)),
               ),
-              child: Text(
-                step.tag,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.6),
-              ),
+              const SizedBox(height: 10),
+              Text(step.title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: titleColor)),
+              const SizedBox(height: 4),
+              Text(step.body,
+                  textAlign: TextAlign.center,
+                  style:
+                      TextStyle(fontSize: 12.5, color: bodyColor, height: 1.3)),
+              if (showTag) ...[
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _tagColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    step.tag,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        // Diagonal strikethrough overlay on eliminated steps.
+        if (eliminated)
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: CustomPaint(painter: _StrikethroughPainter()),
             ),
-          ],
-        ],
-      ),
+          ),
+      ],
     );
   }
 }
 
+class _StrikethroughPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.red.withAlpha(35)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(
+      const Offset(0, 0),
+      Offset(size.width, size.height),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width, 0),
+      Offset(0, size.height),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class _CalloutBar extends StatelessWidget {
-  const _CalloutBar({required this.color, required this.text});
+  const _CalloutBar({required this.color, required this.text, this.icon});
   final Color color;
   final String text;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
         color: Brand.darkGreen,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-            color: color, fontWeight: FontWeight.w700, fontSize: 14.5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 10),
+          ],
+          Flexible(
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: color, fontWeight: FontWeight.w700, fontSize: 14.5),
+            ),
+          ),
+        ],
       ),
     );
   }
