@@ -307,20 +307,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final membersFuture = FirebaseFunctions.instance
           .httpsCallable('listWorkspaceMembers')
           .call<Map<String, dynamic>>({'workspaceId': wsId});
-      final integrationsFuture = FirebaseFunctions.instance
-          .httpsCallable('getWorkspaceIntegrationStatus')
-          .call<Map<String, dynamic>>({'workspaceId': wsId});
+      final wsDocFuture = _wsRef().get();
       final repoAccessFuture = FirebaseFunctions.instance
           .httpsCallable('getWorkspaceRepoAccess')
           .call<Map<String, dynamic>>({'workspaceId': wsId});
 
-      final results = await Future.wait([
-        membersFuture,
-        integrationsFuture,
-        repoAccessFuture,
-      ]);
+      final membersResult = await membersFuture;
+      final wsSnap = await wsDocFuture;
+      final repoAccessResult = await repoAccessFuture;
 
-      final rawMembers = (results[0].data['members'] as List?) ?? const [];
+      final rawMembers = (membersResult.data['members'] as List?) ?? const [];
       final members = rawMembers
           .map((m) => _WorkspaceMemberAccess.fromJson(
               Map<String, dynamic>.from(m as Map)))
@@ -332,16 +328,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           return (a.email ?? a.uid).compareTo(b.email ?? b.uid);
         });
 
-      final integrations = results[1].data;
+      final integrations =
+          (wsSnap.data()?['integrations'] as Map?) ?? const {};
       debugPrint(
           '[settings] _loadAdminConfig integrations=$integrations');
-      final rawRepos = (results[2].data['repos'] as List?) ?? const [];
+      final rawRepos = (repoAccessResult.data['repos'] as List?) ?? const [];
       final repos = rawRepos
           .map((value) => value?.toString().trim() ?? '')
           .where((value) => value.isNotEmpty)
           .toList();
       final rawRepoAccess =
-          (results[2].data['repoAccessByUser'] as Map?) ?? const {};
+          (repoAccessResult.data['repoAccessByUser'] as Map?) ?? const {};
       final repoSet = repos.toSet();
       final repoAccessByUser = <String, Set<String>>{
         for (final entry in rawRepoAccess.entries)
@@ -354,8 +351,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
       setState(() {
         _workspaceMembers = members;
-        _hasGithubToken = integrations['hasGithubToken'] as bool? ?? false;
-        _hasLinearApiKey = integrations['hasLinearApiKey'] as bool? ?? false;
+        _hasGithubToken =
+            (integrations['githubToken'] as String?)?.trim().isNotEmpty ?? false;
+        _hasLinearApiKey =
+            (integrations['linearApiKey'] as String?)?.trim().isNotEmpty ?? false;
         _setRepoControllers(repos);
         _repoAccessByUser = repoAccessByUser;
       });
@@ -393,40 +392,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _saveSection(
       'GitHub token saved.',
       () async {
-        debugPrint('[settings] calling saveWorkspaceIntegrationSecrets…');
-        final result = await FirebaseFunctions.instance
-            .httpsCallable('saveWorkspaceIntegrationSecrets')
-            .call<Map<String, dynamic>>({
-          'workspaceId': wsId,
-          'githubToken': token,
-        });
-        debugPrint(
-            '[settings] saveWorkspaceIntegrationSecrets result=${result.data}');
-        final hasToken = result.data['hasGithubToken'] as bool? ?? false;
-        debugPrint('[settings] parsed hasGithubToken=$hasToken');
-        _hasGithubToken = hasToken;
+        await _wsRef().set({
+          'integrations': {'githubToken': token},
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        _hasGithubToken = true;
         _githubTokenController.clear();
       },
       (v) => _savingGithubToken = v,
     );
-    debugPrint(
-        '[settings] _saveGithubToken done. _hasGithubToken=$_hasGithubToken '
-        '_error=$_error _notice=$_notice');
   }
 
   Future<void> _saveLinearApiKey() async {
     final wsId = widget.auth.workspaceId;
     if (wsId == null) return;
+    final key = _linearApiKeyController.text.trim();
     await _saveSection(
       'Linear API key saved.',
       () async {
-        final result = await FirebaseFunctions.instance
-            .httpsCallable('saveWorkspaceIntegrationSecrets')
-            .call<Map<String, dynamic>>({
-          'workspaceId': wsId,
-          'linearApiKey': _linearApiKeyController.text.trim(),
-        });
-        _hasLinearApiKey = result.data['hasLinearApiKey'] as bool? ?? false;
+        await _wsRef().set({
+          'integrations': {
+            'linearApiKey': key.isEmpty ? FieldValue.delete() : key,
+          },
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        _hasLinearApiKey = key.isNotEmpty;
         _linearApiKeyController.clear();
       },
       (v) => _savingLinearApiKey = v,
