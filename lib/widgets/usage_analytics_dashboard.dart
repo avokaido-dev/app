@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 ///
 /// Displays usage analytics and cost attribution information.
 class UsageAnalyticsDashboard extends StatelessWidget {
-  const UsageAnalyticsDashboard({Key? key}) : super(key: key);
+  const UsageAnalyticsDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {

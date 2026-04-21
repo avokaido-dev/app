@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -97,10 +97,10 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
     routes: [
       GoRoute(
         path: '/signin',
-        builder: (_, __) => SignInScreen(auth: widget.auth),
+        builder: (context, state) => SignInScreen(auth: widget.auth),
       ),
-      GoRoute(path: '/investors', builder: (_, __) => const InvestorsScreen()),
-      GoRoute(path: '/tutorial', builder: (_, __) => const TutorialScreen()),
+      GoRoute(path: '/investors', builder: (context, state) => const InvestorsScreen()),
+      GoRoute(path: '/tutorial', builder: (context, state) => const TutorialScreen()),
       GoRoute(
         path: '/invite/:token',
         builder: (_, state) =>
@@ -108,7 +108,7 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
       ),
       GoRoute(
         path: '/create-workspace',
-        builder: (_, __) => CreateWorkspaceScreen(auth: widget.auth),
+        builder: (context, state) => CreateWorkspaceScreen(auth: widget.auth),
       ),
       ShellRoute(
         builder: (context, state, child) =>
@@ -116,27 +116,27 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
         routes: [
           GoRoute(
             path: '/workspace/costs',
-            builder: (_, __) => CostsScreen(auth: widget.auth),
+            builder: (context, state) => CostsScreen(auth: widget.auth),
           ),
           GoRoute(
             path: '/workspace/billing',
-            builder: (_, __) => BillingScreen(auth: widget.auth),
+            builder: (context, _) => BillingScreen(auth: widget.auth),
           ),
           GoRoute(
             path: '/workspace/team',
-            builder: (_, __) => TeamScreen(auth: widget.auth),
+            builder: (context, _) => TeamScreen(auth: widget.auth),
           ),
           GoRoute(
             path: '/workspace/releases',
-            builder: (_, __) => ReleasesScreen(auth: widget.auth),
+            builder: (context, _) => ReleasesScreen(auth: widget.auth),
           ),
           GoRoute(
             path: '/workspace/settings',
-            builder: (_, __) => SettingsScreen(auth: widget.auth),
+            builder: (context, _) => SettingsScreen(auth: widget.auth),
           ),
           GoRoute(
             path: '/workspace/download',
-            builder: (_, __) => DownloadScreen(auth: widget.auth),
+            builder: (context, _) => DownloadScreen(auth: widget.auth),
           ),
         ],
       ),
