@@ -24,7 +24,10 @@ void main() {
       expect(audit.action, action);
       // Check that audit id is not empty and timestamp is close to now
       expect(audit.id.isNotEmpty, isTrue);
-      expect(audit.timestamp.difference(DateTime.now()).inSeconds.abs(), lessThan(2));
+      expect(
+        audit.timestamp.difference(DateTime.now()).inSeconds.abs(),
+        lessThan(2),
+      );
     });
 
     test('clearAudits clears all audits', () {

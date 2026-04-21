@@ -1,5 +1,3 @@
-
-
 /// An immutable model representing a workspace audit record.
 class WorkspaceAudit {
   final String id;

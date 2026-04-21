@@ -10,10 +10,7 @@ class WorkspaceAuditProvider extends ChangeNotifier {
   List<WorkspaceAudit> get audits => List.unmodifiable(_audits);
 
   /// Records a new audit activity with the provided [user] and [action].
-  void recordAudit({
-    required String user,
-    required String action,
-  }) {
+  void recordAudit({required String user, required String action}) {
     final timestamp = DateTime.now();
     final audit = WorkspaceAudit(
       id: timestamp.millisecondsSinceEpoch.toString(),

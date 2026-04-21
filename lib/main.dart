@@ -99,8 +99,14 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
         path: '/signin',
         builder: (context, state) => SignInScreen(auth: widget.auth),
       ),
-      GoRoute(path: '/investors', builder: (context, state) => const InvestorsScreen()),
-      GoRoute(path: '/tutorial', builder: (context, state) => const TutorialScreen()),
+      GoRoute(
+        path: '/investors',
+        builder: (context, state) => const InvestorsScreen(),
+      ),
+      GoRoute(
+        path: '/tutorial',
+        builder: (context, state) => const TutorialScreen(),
+      ),
       GoRoute(
         path: '/invite/:token',
         builder: (_, state) =>
