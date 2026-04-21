@@ -101,8 +101,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? _error;
   String? _notice;
 
-  static final RegExp _repoSlugRe =
-      RegExp(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$');
+  static final RegExp _repoSlugRe = RegExp(
+    r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$',
+  );
 
   @override
   void dispose() {
@@ -129,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // API keys
     final keys =
         (settings['aiProviderKeys'] as Map?)?.cast<String, Object?>() ??
-            const {};
+        const {};
     for (final p in _providers) {
       final entry = (keys[p.id] as Map?)?.cast<String, Object?>();
       _keyControllers[p.id]!.text = (entry?['value'] as String?) ?? '';
@@ -139,10 +140,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Model defaults
     final models =
         (settings['modelDefaults'] as Map?)?.cast<String, Object?>() ??
-            const {};
+        const {};
     for (final p in _providers) {
-      _modelDefaultControllers[p.id]!.text =
-          (models[p.id] as String?) ?? '';
+      _modelDefaultControllers[p.id]!.text = (models[p.id] as String?) ?? '';
     }
     _modelDefaultsLocked = (models['locked'] as bool?) ?? false;
 
@@ -162,10 +162,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final entry = (qaChecks[c.id] as Map?)?.cast<String, Object?>();
       _qaCheckEnabled[c.id] = (entry?['enabled'] as bool?) ?? true;
       final severity = entry?['severity'] as String?;
-      _qaCheckSeverity[c.id] =
-          (severity == 'warning' || severity == 'critical')
-              ? severity!
-              : 'critical';
+      _qaCheckSeverity[c.id] = (severity == 'warning' || severity == 'critical')
+          ? severity!
+          : 'critical';
     }
     _qaRulesLocked = (qa['locked'] as bool?) ?? false;
   }
@@ -277,10 +276,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'QA rules saved.',
       () => _wsRef().set({
         'settings': {
-          'qaRules': {
-            'checks': checks,
-            'locked': _qaRulesLocked,
-          },
+          'qaRules': {'checks': checks, 'locked': _qaRulesLocked},
         },
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)),
@@ -295,7 +291,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _repoControllers
       ..clear()
       ..addAll(
-        (repos.isEmpty ? [''] : repos).map((repo) => TextEditingController(text: repo)),
+        (repos.isEmpty ? [''] : repos).map(
+          (repo) => TextEditingController(text: repo),
+        ),
       );
   }
 
@@ -319,21 +317,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final repoAccessResult = await repoAccessFuture;
 
       final rawMembers = (membersResult.data['members'] as List?) ?? const [];
-      final members = rawMembers
-          .map((m) => _WorkspaceMemberAccess.fromJson(
-              Map<String, dynamic>.from(m as Map)))
-          .toList()
-        ..sort((a, b) {
-          if (a.workspaceRole != b.workspaceRole) {
-            return a.workspaceRole == 'admin' ? -1 : 1;
-          }
-          return (a.email ?? a.uid).compareTo(b.email ?? b.uid);
-        });
+      final members =
+          rawMembers
+              .map(
+                (m) => _WorkspaceMemberAccess.fromJson(
+                  Map<String, dynamic>.from(m as Map),
+                ),
+              )
+              .toList()
+            ..sort((a, b) {
+              if (a.workspaceRole != b.workspaceRole) {
+                return a.workspaceRole == 'admin' ? -1 : 1;
+              }
+              return (a.email ?? a.uid).compareTo(b.email ?? b.uid);
+            });
 
-      final integrations =
-          (wsSnap.data()?['integrations'] as Map?) ?? const {};
-      debugPrint(
-          '[settings] _loadAdminConfig integrations=$integrations');
+      final integrations = (wsSnap.data()?['integrations'] as Map?) ?? const {};
+      debugPrint('[settings] _loadAdminConfig integrations=$integrations');
       final rawRepos = (repoAccessResult.data['repos'] as List?) ?? const [];
       final repos = rawRepos
           .map((value) => value?.toString().trim() ?? '')
@@ -354,9 +354,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _workspaceMembers = members;
         _hasGithubToken =
-            (integrations['githubToken'] as String?)?.trim().isNotEmpty ?? false;
+            (integrations['githubToken'] as String?)?.trim().isNotEmpty ??
+            false;
         _hasLinearApiKey =
-            (integrations['linearApiKey'] as String?)?.trim().isNotEmpty ?? false;
+            (integrations['linearApiKey'] as String?)?.trim().isNotEmpty ??
+            false;
         _setRepoControllers(repos);
         _repoAccessByUser = repoAccessByUser;
       });
@@ -378,51 +380,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
     final token = _githubTokenController.text.trim();
     debugPrint(
-        '[settings] _saveGithubToken token len=${token.length} prefix='
-        '${token.isEmpty ? "<empty>" : token.substring(0, token.length < 4 ? token.length : 4)}…');
+      '[settings] _saveGithubToken token len=${token.length} prefix='
+      '${token.isEmpty ? "<empty>" : token.substring(0, token.length < 4 ? token.length : 4)}…',
+    );
     if (token.isEmpty) {
-      setState(() => _error =
-          'Paste a GitHub token (ghp_… or github_pat_…) before saving.');
+      setState(
+        () => _error =
+            'Paste a GitHub token (ghp_… or github_pat_…) before saving.',
+      );
       return;
     }
     if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
-      setState(() => _error =
-          "That doesn't look like a GitHub token. It should start with "
-          '"ghp_" or "github_pat_".');
+      setState(
+        () => _error =
+            "That doesn't look like a GitHub token. It should start with "
+            '"ghp_" or "github_pat_".',
+      );
       return;
     }
-    await _saveSection(
-      'GitHub token saved.',
-      () async {
-        await _wsRef().set({
-          'integrations': {'githubToken': token},
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-        _hasGithubToken = true;
-        _githubTokenController.clear();
-      },
-      (v) => _savingGithubToken = v,
-    );
+    await _saveSection('GitHub token saved.', () async {
+      await _wsRef().set({
+        'integrations': {'githubToken': token},
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      _hasGithubToken = true;
+      _githubTokenController.clear();
+    }, (v) => _savingGithubToken = v);
   }
 
   Future<void> _saveLinearApiKey() async {
     final wsId = widget.auth.workspaceId;
     if (wsId == null) return;
     final key = _linearApiKeyController.text.trim();
-    await _saveSection(
-      'Linear API key saved.',
-      () async {
-        await _wsRef().set({
-          'integrations': {
-            'linearApiKey': key.isEmpty ? FieldValue.delete() : key,
-          },
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-        _hasLinearApiKey = key.isNotEmpty;
-        _linearApiKeyController.clear();
-      },
-      (v) => _savingLinearApiKey = v,
-    );
+    await _saveSection('Linear API key saved.', () async {
+      await _wsRef().set({
+        'integrations': {
+          'linearApiKey': key.isEmpty ? FieldValue.delete() : key,
+        },
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      _hasLinearApiKey = key.isNotEmpty;
+      _linearApiKeyController.clear();
+    }, (v) => _savingLinearApiKey = v);
   }
 
   void _addRepoField() {
@@ -482,39 +481,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final repoSet = repos.toSet();
     final payload = <String, List<String>>{
       for (final member in _workspaceMembers)
-        member.uid: (_repoAccessByUser[member.uid] ?? const <String>{})
-            .where(repoSet.contains)
-            .toList()
-          ..sort(),
+        member.uid:
+            (_repoAccessByUser[member.uid] ?? const <String>{})
+                .where(repoSet.contains)
+                .toList()
+              ..sort(),
     };
-    await _saveSection(
-      'Repository access saved.',
-      () async {
-        final result = await FirebaseFunctions.instance
-            .httpsCallable('saveWorkspaceRepoAccess')
-            .call<Map<String, dynamic>>({
-          'workspaceId': wsId,
-          'repos': repos,
-          'repoAccessByUser': payload,
-        });
-        final savedRepos = ((result.data['repos'] as List?) ?? const [])
-            .map((value) => value?.toString().trim() ?? '')
-            .where((value) => value.isNotEmpty)
-            .toList();
-        final savedRepoSet = savedRepos.toSet();
-        final savedRawAccess =
-            (result.data['repoAccessByUser'] as Map?) ?? const {};
-        _setRepoControllers(savedRepos);
-        _repoAccessByUser = {
-          for (final entry in savedRawAccess.entries)
-            entry.key.toString(): ((entry.value as List?) ?? const [])
-                .map((value) => value?.toString().trim() ?? '')
-                .where((value) => savedRepoSet.contains(value))
-                .toSet(),
-        };
-      },
-      (v) => _savingRepoAccess = v,
-    );
+    await _saveSection('Repository access saved.', () async {
+      final result = await FirebaseFunctions.instance
+          .httpsCallable('saveWorkspaceRepoAccess')
+          .call<Map<String, dynamic>>({
+            'workspaceId': wsId,
+            'repos': repos,
+            'repoAccessByUser': payload,
+          });
+      final savedRepos = ((result.data['repos'] as List?) ?? const [])
+          .map((value) => value?.toString().trim() ?? '')
+          .where((value) => value.isNotEmpty)
+          .toList();
+      final savedRepoSet = savedRepos.toSet();
+      final savedRawAccess =
+          (result.data['repoAccessByUser'] as Map?) ?? const {};
+      _setRepoControllers(savedRepos);
+      _repoAccessByUser = {
+        for (final entry in savedRawAccess.entries)
+          entry.key.toString(): ((entry.value as List?) ?? const [])
+              .map((value) => value?.toString().trim() ?? '')
+              .where((value) => savedRepoSet.contains(value))
+              .toSet(),
+      };
+    }, (v) => _savingRepoAccess = v);
   }
 
   Future<void> _importGithubRepos() async {
@@ -546,24 +542,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (!mounted) return;
     if (available.isEmpty) {
-      setState(() => _notice =
-          'No repositories accessible with this token.');
+      setState(() => _notice = 'No repositories accessible with this token.');
       return;
     }
 
     final existing = _currentRepoSlugs().toSet();
     final picked = await showDialog<Set<String>>(
       context: context,
-      builder: (_) => _GithubRepoPickerDialog(
-        available: available,
-        alreadyAdded: existing,
-      ),
+      builder: (_) =>
+          _GithubRepoPickerDialog(available: available, alreadyAdded: existing),
     );
     if (picked == null || picked.isEmpty || !mounted) return;
 
     setState(() {
       _setRepoControllers([...existing, ...picked]);
-      _notice = 'Added ${picked.length} '
+      _notice =
+          'Added ${picked.length} '
           '${picked.length == 1 ? 'repository' : 'repositories'}. '
           'Click "Save repositories & access" to persist.';
     });
@@ -575,7 +569,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (wsId == null) return const SizedBox.shrink();
     final canEdit = widget.auth.isOrgAdmin;
     if (canEdit && _adminConfigWorkspaceId != wsId && !_loadingAdminConfig) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadAdminConfig(wsId));
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _loadAdminConfig(wsId),
+      );
     }
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -633,8 +629,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onImportGithubRepos: _importGithubRepos,
                 onRemoveRepo: _removeRepoField,
                 onToggleAccess: (uid, repo, enabled) => setState(() {
-                  final set =
-                      _repoAccessByUser.putIfAbsent(uid, () => <String>{});
+                  final set = _repoAccessByUser.putIfAbsent(
+                    uid,
+                    () => <String>{},
+                  );
                   if (enabled) {
                     set.add(repo);
                   } else {
@@ -671,10 +669,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 locked: _routingLocked,
                 canEdit: canEdit,
                 saving: _savingRouting,
-                onDefaultChanged: (v) =>
-                    setState(() => _defaultProvider = v),
-                onFallbackChanged: (v) =>
-                    setState(() => _fallbackProvider = v),
+                onDefaultChanged: (v) => setState(() => _defaultProvider = v),
+                onFallbackChanged: (v) => setState(() => _fallbackProvider = v),
                 onLockedChanged: (v) => setState(() => _routingLocked = v),
                 onSave: _saveRouting,
               ),
@@ -737,17 +733,20 @@ class _SectionCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(title,
-                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
                 ?trailing,
               ],
             ),
             if (subtitle != null) ...[
               const SizedBox(height: 4),
-              Text(subtitle!,
-                  style: const TextStyle(
-                      fontSize: 12, color: Colors.black54)),
+              Text(
+                subtitle!,
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
             ],
             const SizedBox(height: 12),
             child,
@@ -847,8 +846,7 @@ class _NameCard extends StatelessWidget {
           ),
           if (canEdit) ...[
             const SizedBox(height: 12),
-            _SaveButton(
-                saving: saving, onSave: onSave, label: 'Save name'),
+            _SaveButton(saving: saving, onSave: onSave, label: 'Save name'),
           ],
         ],
       ),
@@ -920,8 +918,7 @@ class _ApiKeysCard extends StatelessWidget {
               onClear: () => onClear(p.id),
             ),
           if (canEdit)
-            _SaveButton(
-                saving: saving, onSave: onSave, label: 'Save keys'),
+            _SaveButton(saving: saving, onSave: onSave, label: 'Save keys'),
         ],
       ),
     );
@@ -972,9 +969,11 @@ class _ProviderKeyRowState extends State<_ProviderKeyRow> {
                 suffixIcon: IconButton(
                   tooltip: _obscure ? 'Show' : 'Hide',
                   onPressed: () => setState(() => _obscure = !_obscure),
-                  icon: Icon(_obscure
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined),
+                  icon: Icon(
+                    _obscure
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
                 ),
               ),
               style: const TextStyle(fontFamily: 'monospace'),
@@ -1029,26 +1028,26 @@ class _StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final (label, bg, fg, tooltip) = switch (state) {
       _SettingState.enforced => (
-          'Cloud · enforced',
-          const Color(0xFFDCF2E0),
-          const Color(0xFF1B5E20),
-          'Value is set here and locked. Every member\'s desktop app '
-              'must use this value.',
-        ),
+        'Cloud · enforced',
+        const Color(0xFFDCF2E0),
+        const Color(0xFF1B5E20),
+        'Value is set here and locked. Every member\'s desktop app '
+            'must use this value.',
+      ),
       _SettingState.cloudDefault => (
-          'Cloud · default',
-          const Color(0xFFE3F2FD),
-          const Color(0xFF0D47A1),
-          'Value is set here as a default. Members can still override '
-              'it locally in the desktop app.',
-        ),
+        'Cloud · default',
+        const Color(0xFFE3F2FD),
+        const Color(0xFF0D47A1),
+        'Value is set here as a default. Members can still override '
+            'it locally in the desktop app.',
+      ),
       _SettingState.notSet => (
-          'Not set',
-          const Color(0xFFEEEEEE),
-          const Color(0xFF616161),
-          'No cloud value. Each desktop app uses the member\'s own '
-              'local configuration.',
-        ),
+        'Not set',
+        const Color(0xFFEEEEEE),
+        const Color(0xFF616161),
+        'No cloud value. Each desktop app uses the member\'s own '
+            'local configuration.',
+      ),
     };
     return Tooltip(
       message: tooltip,
@@ -1120,8 +1119,7 @@ class _GitHubCard extends StatelessWidget {
   final void Function(String uid, String repo, bool enabled) onToggleAccess;
   final VoidCallback onSaveRepoAccess;
 
-  static final RegExp _slugRe =
-      RegExp(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$');
+  static final RegExp _slugRe = RegExp(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$');
 
   List<String> get _repos {
     final seen = <String>{};
@@ -1136,8 +1134,10 @@ class _GitHubCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('[settings] _GitHubCard build hasToken=$hasToken '
-        'savingToken=$savingToken loading=$loading');
+    debugPrint(
+      '[settings] _GitHubCard build hasToken=$hasToken '
+      'savingToken=$savingToken loading=$loading',
+    );
     final repos = _repos;
     return _SectionCard(
       title: 'GitHub',
@@ -1154,9 +1154,7 @@ class _GitHubCard extends StatelessWidget {
                 _LabeledRow(
                   title: 'Organisation token',
                   chip: _StatusChip(
-                    hasToken
-                        ? _SettingState.enforced
-                        : _SettingState.notSet,
+                    hasToken ? _SettingState.enforced : _SettingState.notSet,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1200,8 +1198,7 @@ class _GitHubCard extends StatelessWidget {
                     validate: (v) {
                       final t = v.trim();
                       if (t.isEmpty) return null;
-                      if (t.startsWith('ghp_') ||
-                          t.startsWith('github_pat_')) {
+                      if (t.startsWith('ghp_') || t.startsWith('github_pat_')) {
                         return 'This looks like a token. Put it in the '
                             'field above, not here.';
                       }
@@ -1229,7 +1226,8 @@ class _GitHubCard extends StatelessWidget {
                                 width: 14,
                                 height: 14,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2),
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.sync),
                         label: Text(
@@ -1363,9 +1361,10 @@ class _LabeledRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(title,
-            style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.w600)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(width: 10),
         chip,
       ],
@@ -1409,9 +1408,7 @@ class _LinearCard extends StatelessWidget {
                 _LabeledRow(
                   title: 'API key',
                   chip: _StatusChip(
-                    hasApiKey
-                        ? _SettingState.enforced
-                        : _SettingState.notSet,
+                    hasApiKey ? _SettingState.enforced : _SettingState.notSet,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1635,17 +1632,14 @@ class _ModelDefaultsCard extends StatelessWidget {
       'o3-mini',
       'o4-mini',
     ],
-    'gemini': [
-      'gemini-2.5-pro',
-      'gemini-2.5-flash',
-      'gemini-2.0-flash',
-    ],
+    'gemini': ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'],
   };
 
   @override
   Widget build(BuildContext context) {
-    final hasValue = providers
-        .any((p) => controllers[p.id]?.text.trim().isNotEmpty ?? false);
+    final hasValue = providers.any(
+      (p) => controllers[p.id]?.text.trim().isNotEmpty ?? false,
+    );
     return _SectionCard(
       title: 'Model defaults',
       trailing: _StatusChip(_stateFor(hasValue: hasValue, locked: locked)),
@@ -1671,8 +1665,7 @@ class _ModelDefaultsCard extends StatelessWidget {
             onChanged: onLockedChanged,
           ),
           if (canEdit)
-            _SaveButton(
-                saving: saving, onSave: onSave, label: 'Save models'),
+            _SaveButton(saving: saving, onSave: onSave, label: 'Save models'),
         ],
       ),
     );
@@ -1786,7 +1779,9 @@ class _RoutingCard extends StatelessWidget {
                   ),
                   items: [
                     const DropdownMenuItem<String?>(
-                        value: null, child: Text('Not set')),
+                      value: null,
+                      child: Text('Not set'),
+                    ),
                     for (final p in providers)
                       DropdownMenuItem(value: p.id, child: Text(p.label)),
                   ],
@@ -1804,7 +1799,9 @@ class _RoutingCard extends StatelessWidget {
                   ),
                   items: [
                     const DropdownMenuItem<String?>(
-                        value: null, child: Text('None')),
+                      value: null,
+                      child: Text('None'),
+                    ),
                     for (final p in providers)
                       DropdownMenuItem(value: p.id, child: Text(p.label)),
                   ],
@@ -1820,8 +1817,7 @@ class _RoutingCard extends StatelessWidget {
             onChanged: onLockedChanged,
           ),
           if (canEdit)
-            _SaveButton(
-                saving: saving, onSave: onSave, label: 'Save routing'),
+            _SaveButton(saving: saving, onSave: onSave, label: 'Save routing'),
         ],
       ),
     );
@@ -1883,16 +1879,14 @@ class _QaRulesCard extends StatelessWidget {
                   flex: 3,
                   child: Text(
                     'Check',
-                    style:
-                        TextStyle(fontSize: 12, color: Colors.black54),
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ),
                 SizedBox(
                   width: 180,
                   child: Text(
                     'Severity',
-                    style:
-                        TextStyle(fontSize: 12, color: Colors.black54),
+                    style: TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ),
               ],
@@ -1915,8 +1909,7 @@ class _QaRulesCard extends StatelessWidget {
             onChanged: onLockedChanged,
           ),
           if (canEdit)
-            _SaveButton(
-                saving: saving, onSave: onSave, label: 'Save QA rules'),
+            _SaveButton(saving: saving, onSave: onSave, label: 'Save QA rules'),
         ],
       ),
     );
@@ -1952,8 +1945,7 @@ class _QaCheckRow extends StatelessWidget {
             width: 40,
             child: Checkbox(
               value: enabled,
-              onChanged:
-                  canEdit ? (v) => onEnabledChanged(v ?? false) : null,
+              onChanged: canEdit ? (v) => onEnabledChanged(v ?? false) : null,
             ),
           ),
           Expanded(
@@ -1973,8 +1965,10 @@ class _QaCheckRow extends StatelessWidget {
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 isDense: true,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 10,
+                ),
               ),
               items: const [
                 DropdownMenuItem(
@@ -2039,8 +2033,8 @@ class _GithubRepoPickerDialogState extends State<_GithubRepoPickerDialog> {
   Widget build(BuildContext context) {
     final visible = _visible;
     final selectable = _selectable.toList();
-    final allVisibleSelected = selectable.isNotEmpty &&
-        selectable.every(_selected.contains);
+    final allVisibleSelected =
+        selectable.isNotEmpty && selectable.every(_selected.contains);
 
     return AlertDialog(
       title: const Text('Import GitHub repositories'),
@@ -2076,9 +2070,11 @@ class _GithubRepoPickerDialogState extends State<_GithubRepoPickerDialog> {
                             }
                           });
                         },
-                  icon: Icon(allVisibleSelected
-                      ? Icons.check_box
-                      : Icons.check_box_outline_blank),
+                  icon: Icon(
+                    allVisibleSelected
+                        ? Icons.check_box
+                        : Icons.check_box_outline_blank,
+                  ),
                   label: Text(allVisibleSelected ? 'Clear' : 'Select all'),
                 ),
                 const Spacer(),
@@ -2096,8 +2092,7 @@ class _GithubRepoPickerDialogState extends State<_GithubRepoPickerDialog> {
                       itemCount: visible.length,
                       itemBuilder: (context, index) {
                         final slug = visible[index];
-                        final alreadyAdded =
-                            widget.alreadyAdded.contains(slug);
+                        final alreadyAdded = widget.alreadyAdded.contains(slug);
                         return CheckboxListTile(
                           dense: true,
                           value: alreadyAdded || _selected.contains(slug),
@@ -2113,8 +2108,9 @@ class _GithubRepoPickerDialogState extends State<_GithubRepoPickerDialog> {
                                   });
                                 },
                           title: Text(slug),
-                          subtitle:
-                              alreadyAdded ? const Text('Already added') : null,
+                          subtitle: alreadyAdded
+                              ? const Text('Already added')
+                              : null,
                           controlAffinity: ListTileControlAffinity.leading,
                         );
                       },
@@ -2132,9 +2128,7 @@ class _GithubRepoPickerDialogState extends State<_GithubRepoPickerDialog> {
           onPressed: _selected.isEmpty
               ? null
               : () => Navigator.of(context).pop(_selected),
-          child: Text(_selected.isEmpty
-              ? 'Add'
-              : 'Add ${_selected.length}'),
+          child: Text(_selected.isEmpty ? 'Add' : 'Add ${_selected.length}'),
         ),
       ],
     );

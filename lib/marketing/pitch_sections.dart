@@ -36,7 +36,9 @@ class PitchSection extends StatelessWidget {
     return Container(
       color: background,
       padding: EdgeInsets.symmetric(
-          horizontal: 32, vertical: verticalPadding.toDouble()),
+        horizontal: 32,
+        vertical: verticalPadding.toDouble(),
+      ),
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: maxWidth),
@@ -93,8 +95,12 @@ class PitchHeadline extends StatelessWidget {
 }
 
 class PitchSubhead extends StatelessWidget {
-  const PitchSubhead(this.text,
-      {super.key, this.color = Colors.black87, this.fontSize = 16.0});
+  const PitchSubhead(
+    this.text, {
+    super.key,
+    this.color = Colors.black87,
+    this.fontSize = 16.0,
+  });
   final String text;
   final Color color;
   final double fontSize;
@@ -164,12 +170,14 @@ class PitchProblem extends StatelessWidget {
                         ],
                       ],
                     )
-                  : Column(children: [
-                      for (final c in cards) ...[
-                        c,
-                        if (c != cards.last) const SizedBox(height: 20),
+                  : Column(
+                      children: [
+                        for (final c in cards) ...[
+                          c,
+                          if (c != cards.last) const SizedBox(height: 20),
+                        ],
                       ],
-                    ]);
+                    );
             },
           ),
         ],
@@ -196,14 +204,13 @@ class _ProblemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: const Border(
-          left: BorderSide(color: Brand.accent, width: 4),
-        ),
+        border: const Border(left: BorderSide(color: Brand.accent, width: 4)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withAlpha(10),
-              blurRadius: 16,
-              offset: const Offset(0, 4)),
+            color: Colors.black.withAlpha(10),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -218,14 +225,16 @@ class _ProblemCard extends StatelessWidget {
             child: Icon(icon, color: Brand.green, size: 22),
           ),
           const SizedBox(height: 14),
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
-                  color: Brand.darkGreen)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w700,
+              color: Brand.darkGreen,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(body,
-              style: const TextStyle(fontSize: 14.5, height: 1.55)),
+          Text(body, style: const TextStyle(fontSize: 14.5, height: 1.55)),
         ],
       ),
     );
@@ -270,8 +279,10 @@ class PitchProcessComparison extends StatelessWidget {
           // ── header ──────────────────────────────────────────────────────
           const PitchEyebrow('Before → After'),
           const SizedBox(height: 16),
-          const PitchHeadline('From 6 handoffs to 1 integration point.',
-              color: Brand.darkGreen),
+          const PitchHeadline(
+            'From 6 handoffs to 1 integration point.',
+            color: Brand.darkGreen,
+          ),
           const SizedBox(height: 8),
           const PitchSubhead(
             'The same six steps — four of them automated.',
@@ -280,31 +291,33 @@ class PitchProcessComparison extends StatelessWidget {
           const SizedBox(height: 48),
 
           // ── stat row ────────────────────────────────────────────────────
-          LayoutBuilder(builder: (ctx, c) {
-            final wide = c.maxWidth > 640;
-            final stats = [
-              _StatBadge('6 → 1', 'handoffs', Brand.accent),
-              _StatBadge('4 of 6', 'steps automated', Brand.green),
-              _StatBadge('~80%', 'less coordination overhead', Brand.gold),
-            ];
-            return wide
-                ? Row(
-                    children: [
-                      for (final s in stats) ...[
-                        Expanded(child: s),
-                        if (s != stats.last) const SizedBox(width: 12),
+          LayoutBuilder(
+            builder: (ctx, c) {
+              final wide = c.maxWidth > 640;
+              final stats = [
+                _StatBadge('6 → 1', 'handoffs', Brand.accent),
+                _StatBadge('4 of 6', 'steps automated', Brand.green),
+                _StatBadge('~80%', 'less coordination overhead', Brand.gold),
+              ];
+              return wide
+                  ? Row(
+                      children: [
+                        for (final s in stats) ...[
+                          Expanded(child: s),
+                          if (s != stats.last) const SizedBox(width: 12),
+                        ],
                       ],
-                    ],
-                  )
-                : Column(
-                    children: [
-                      for (final s in stats) ...[
-                        s,
-                        if (s != stats.last) const SizedBox(height: 8),
+                    )
+                  : Column(
+                      children: [
+                        for (final s in stats) ...[
+                          s,
+                          if (s != stats.last) const SizedBox(height: 8),
+                        ],
                       ],
-                    ],
-                  );
-          }),
+                    );
+            },
+          ),
           const SizedBox(height: 40),
 
           // ── TODAY chain ─────────────────────────────────────────────────
@@ -318,34 +331,41 @@ class PitchProcessComparison extends StatelessWidget {
           const SizedBox(height: 16),
           _CalloutBar(
             color: Brand.gold,
-            text: 'Many handoffs = long lead times, high costs, and information loss.',
+            text:
+                'Many handoffs = long lead times, high costs, and information loss.',
             icon: Icons.warning_amber_rounded,
           ),
           const SizedBox(height: 40),
 
           // ── divider ─────────────────────────────────────────────────────
-          Row(children: [
-            const Expanded(child: Divider(thickness: 1)),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                decoration: BoxDecoration(
-                  color: Brand.green,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'Avokaido replaces this',
-                  style: TextStyle(
+          Row(
+            children: [
+              const Expanded(child: Divider(thickness: 1)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Brand.green,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Avokaido replaces this',
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 0.4),
+                      letterSpacing: 0.4,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            const Expanded(child: Divider(thickness: 1)),
-          ]),
+              const Expanded(child: Divider(thickness: 1)),
+            ],
+          ),
           const SizedBox(height: 40),
 
           // ── WITH AVOKAIDO chain ─────────────────────────────────────────
@@ -359,7 +379,8 @@ class PitchProcessComparison extends StatelessWidget {
           const SizedBox(height: 16),
           _CalloutBar(
             color: const Color(0xFF9BD3A6),
-            text: '4 of 6 steps automated  •  Business stays in control  •  Engineers configure quality gates.',
+            text:
+                '4 of 6 steps automated  •  Business stays in control  •  Engineers configure quality gates.',
             icon: Icons.check_circle_outline,
           ),
         ],
@@ -384,26 +405,33 @@ class _StatBadge extends StatelessWidget {
         border: Border(left: BorderSide(color: color, width: 4)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withAlpha(8),
-              blurRadius: 12,
-              offset: const Offset(0, 2)),
+            color: Colors.black.withAlpha(8),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value,
-              style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: color,
-                  height: 1)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: color,
+              height: 1,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 12.5,
-                  color: Colors.black54,
-                  height: 1.3)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12.5,
+              color: Colors.black54,
+              height: 1.3,
+            ),
+          ),
         ],
       ),
     );
@@ -411,10 +439,11 @@ class _StatBadge extends StatelessWidget {
 }
 
 class _ChainLabel extends StatelessWidget {
-  const _ChainLabel(
-      {required this.label,
-      required this.labelColor,
-      required this.description});
+  const _ChainLabel({
+    required this.label,
+    required this.labelColor,
+    required this.description,
+  });
   final String label;
   final Color labelColor;
   final String description;
@@ -434,10 +463,11 @@ class _ChainLabel extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.1,
-                color: labelColor),
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.1,
+              color: labelColor,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -490,7 +520,9 @@ class _ProcessChain extends StatelessWidget {
                   child: Icon(
                     Icons.arrow_forward,
                     size: 18,
-                    color: afterAvokaido ? Brand.green.withAlpha(80) : Colors.black38,
+                    color: afterAvokaido
+                        ? Brand.green.withAlpha(80)
+                        : Colors.black38,
                   ),
                 ),
             ],
@@ -543,26 +575,35 @@ class _StepTile extends StatelessWidget {
                 width: 36,
                 height: 36,
                 alignment: Alignment.center,
-                decoration:
-                    BoxDecoration(color: circleColor, shape: BoxShape.circle),
-                child: Text('${step.n}',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15)),
+                decoration: BoxDecoration(
+                  color: circleColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '${step.n}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
               ),
               const SizedBox(height: 10),
-              Text(step.title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: titleColor)),
+              Text(
+                step.title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: titleColor,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(step.body,
-                  textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontSize: 12.5, color: bodyColor, height: 1.3)),
+              Text(
+                step.body,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12.5, color: bodyColor, height: 1.3),
+              ),
               if (showTag) ...[
                 const SizedBox(height: 10),
                 Container(
@@ -576,10 +617,11 @@ class _StepTile extends StatelessWidget {
                     step.tag,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.6),
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                    ),
                   ),
                 ),
               ],
@@ -606,16 +648,8 @@ class _StrikethroughPainter extends CustomPainter {
       ..color = Colors.red.withAlpha(35)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
-    canvas.drawLine(
-      const Offset(0, 0),
-      Offset(size.width, size.height),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(size.width, 0),
-      Offset(0, size.height),
-      paint,
-    );
+    canvas.drawLine(const Offset(0, 0), Offset(size.width, size.height), paint);
+    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
   }
 
   @override
@@ -649,7 +683,10 @@ class _CalloutBar extends StatelessWidget {
               text,
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: color, fontWeight: FontWeight.w700, fontSize: 14.5),
+                color: color,
+                fontWeight: FontWeight.w700,
+                fontSize: 14.5,
+              ),
             ),
           ),
         ],
@@ -676,65 +713,71 @@ class PitchBuildersBridge extends StatelessWidget {
           const PitchEyebrow('Build fast, operate with Avokaido'),
           const SizedBox(height: 16),
           const PitchHeadline(
-              "We don't replace your AI builder.\nWe make it enterprise-ready."),
+            "We don't replace your AI builder.\nWe make it enterprise-ready.",
+          ),
           const SizedBox(height: 32),
-          LayoutBuilder(builder: (context, c) {
-            final wide = c.maxWidth > 900;
-            final cards = [
-              _BridgeCard(
-                number: '1',
-                numberColor: Brand.accent,
-                title: 'Prototype fast',
-                body:
-                    'Teams prototype with the AI app builder of their '
-                    'choice. Natural language to working code, fast.',
-                footer: 'Exports code to GitHub →',
-              ),
-              _BridgeCard(
-                number: '2',
-                numberColor: Brand.darkGreen,
-                title: 'GitHub repository',
-                body:
-                    'Code lives in a standard GitHub repo. Full version '
-                    'control, branch history, transparency.',
-                footer: 'Avokaido connects here →',
-              ),
-              _BridgeCard(
-                number: '3',
-                numberColor: Brand.green,
-                title: 'Avokaido operates',
-                body: '• Reads & analyses the codebase\n'
-                    '• Sets coding standards & rules\n'
-                    '• Runs quality & regression tests\n'
-                    '• Manages UAT & staging\n'
-                    '• Controls deployment gates\n'
-                    '• Full audit trail & governance',
-              ),
-            ];
-            if (!wide) {
-              return Column(children: [
-                for (final c in cards) ...[
-                  c,
-                  if (c != cards.last) const SizedBox(height: 16),
-                ],
-              ]);
-            }
-            return IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var i = 0; i < cards.length; i++) ...[
-                    Expanded(child: cards[i]),
-                    if (i < cards.length - 1)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 40),
-                        child: Icon(Icons.arrow_forward, color: Brand.green),
-                      ),
+          LayoutBuilder(
+            builder: (context, c) {
+              final wide = c.maxWidth > 900;
+              final cards = [
+                _BridgeCard(
+                  number: '1',
+                  numberColor: Brand.accent,
+                  title: 'Prototype fast',
+                  body:
+                      'Teams prototype with the AI app builder of their '
+                      'choice. Natural language to working code, fast.',
+                  footer: 'Exports code to GitHub →',
+                ),
+                _BridgeCard(
+                  number: '2',
+                  numberColor: Brand.darkGreen,
+                  title: 'GitHub repository',
+                  body:
+                      'Code lives in a standard GitHub repo. Full version '
+                      'control, branch history, transparency.',
+                  footer: 'Avokaido connects here →',
+                ),
+                _BridgeCard(
+                  number: '3',
+                  numberColor: Brand.green,
+                  title: 'Avokaido operates',
+                  body:
+                      '• Reads & analyses the codebase\n'
+                      '• Sets coding standards & rules\n'
+                      '• Runs quality & regression tests\n'
+                      '• Manages UAT & staging\n'
+                      '• Controls deployment gates\n'
+                      '• Full audit trail & governance',
+                ),
+              ];
+              if (!wide) {
+                return Column(
+                  children: [
+                    for (final c in cards) ...[
+                      c,
+                      if (c != cards.last) const SizedBox(height: 16),
+                    ],
                   ],
-                ],
-              ),
-            );
-          }),
+                );
+              }
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < cards.length; i++) ...[
+                      Expanded(child: cards[i]),
+                      if (i < cards.length - 1)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 40),
+                          child: Icon(Icons.arrow_forward, color: Brand.green),
+                        ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
           const SizedBox(height: 24),
           _CalloutBar(
             color: const Color(0xFF9BD3A6),
@@ -781,21 +824,29 @@ class _BridgeCard extends StatelessWidget {
                 width: 36,
                 height: 36,
                 alignment: Alignment.center,
-                decoration:
-                    BoxDecoration(color: numberColor, shape: BoxShape.circle),
-                child: Text(number,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16)),
+                decoration: BoxDecoration(
+                  color: numberColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  number,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(title,
-                    style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Brand.darkGreen)),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Brand.darkGreen,
+                  ),
+                ),
               ),
             ],
           ),
@@ -803,11 +854,14 @@ class _BridgeCard extends StatelessWidget {
           Text(body, style: const TextStyle(fontSize: 14, height: 1.5)),
           if (footer != null) ...[
             const SizedBox(height: 12),
-            Text(footer!,
-                style: TextStyle(
-                    color: numberColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13)),
+            Text(
+              footer!,
+              style: TextStyle(
+                color: numberColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
           ],
         ],
       ),
@@ -843,36 +897,52 @@ class PitchSolution extends StatelessWidget {
             color: Color(0xFFB6C9BB),
           ),
           const SizedBox(height: 40),
-          LayoutBuilder(builder: (context, c) {
-            final wide = c.maxWidth > 820;
-            final cards = [
-              _Pillar(Icons.rocket_launch_outlined, 'AI app builder',
-                  'Natural language to production-ready code with enterprise frameworks and patterns.'),
-              _Pillar(Icons.verified_user_outlined, 'Compliance first',
-                  'Built-in GDPR, SOC 2, ISO 27001 templates and audit logging.'),
-              _Pillar(Icons.handshake_outlined, 'Customer success',
-                  'Dedicated onboarding, hands-on support, and long-term success partnerships — not just a self-serve tool.'),
-              _Pillar(Icons.lock_outline, 'Private & secure',
-                  'Self-hosted option, SSO/SAML, encrypted at rest, no training on your code.'),
-            ];
-            if (!wide) {
-              return Column(children: [
-                for (final c in cards) ...[
-                  c,
-                  if (c != cards.last) const SizedBox(height: 20),
-                ],
-              ]);
-            }
-            return GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 20,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 3.2,
-              children: cards,
-            );
-          }),
+          LayoutBuilder(
+            builder: (context, c) {
+              final wide = c.maxWidth > 820;
+              final cards = [
+                _Pillar(
+                  Icons.rocket_launch_outlined,
+                  'AI app builder',
+                  'Natural language to production-ready code with enterprise frameworks and patterns.',
+                ),
+                _Pillar(
+                  Icons.verified_user_outlined,
+                  'Compliance first',
+                  'Built-in GDPR, SOC 2, ISO 27001 templates and audit logging.',
+                ),
+                _Pillar(
+                  Icons.handshake_outlined,
+                  'Customer success',
+                  'Dedicated onboarding, hands-on support, and long-term success partnerships — not just a self-serve tool.',
+                ),
+                _Pillar(
+                  Icons.lock_outline,
+                  'Private & secure',
+                  'Self-hosted option, SSO/SAML, encrypted at rest, no training on your code.',
+                ),
+              ];
+              if (!wide) {
+                return Column(
+                  children: [
+                    for (final c in cards) ...[
+                      c,
+                      if (c != cards.last) const SizedBox(height: 20),
+                    ],
+                  ],
+                );
+              }
+              return GridView.count(
+                crossAxisCount: 2,
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 20,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                childAspectRatio: 3.2,
+                children: cards,
+              );
+            },
+          ),
         ],
       ),
     );
@@ -893,7 +963,9 @@ class _Pillar extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-              color: Brand.green.withAlpha(60), shape: BoxShape.circle),
+            color: Brand.green.withAlpha(60),
+            shape: BoxShape.circle,
+          ),
           child: Icon(icon, color: const Color(0xFF9BD3A6), size: 22),
         ),
         const SizedBox(width: 16),
@@ -901,17 +973,23 @@ class _Pillar extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(body,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
-                      color: Color(0xFFC5D4C9))),
+              Text(
+                body,
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.5,
+                  color: Color(0xFFC5D4C9),
+                ),
+              ),
             ],
           ),
         ),
@@ -938,63 +1016,67 @@ class PitchSegments extends StatelessWidget {
           const SizedBox(height: 16),
           const PitchHeadline('Three customer segments.'),
           const SizedBox(height: 32),
-          LayoutBuilder(builder: (context, c) {
-            final wide = c.maxWidth > 820;
-            final cards = [
-              _SegmentCard(
-                color: const Color(0xFF6EB47F),
-                icon: Icons.person_outline,
-                title: 'Solo builders',
-                subtitle: 'Single-person businesses',
-                bullets: const [
-                  'Freelancers & consultants building their own tools',
-                  'Enterprise-grade quality without a dev team',
-                  'From idea to production-ready app, with guardrails',
-                ],
-              ),
-              _SegmentCard(
-                color: Brand.gold,
-                icon: Icons.apartment_outlined,
-                title: 'SME to enterprise',
-                subtitle: 'Company applications',
-                bullets: const [
-                  'Internal tools, workflows, and customer-facing apps',
-                  'IT sets quality gates, business users do UAT',
-                  'Compliance, testing and deployment standards built in',
-                ],
-              ),
-              _SegmentCard(
-                color: Brand.accent,
-                icon: Icons.favorite_border,
-                title: 'Prototype graduates',
-                subtitle: 'Apps built with consumer AI tools',
-                bullets: const [
-                  'Export from any AI builder → import into Avokaido',
-                  'Add quality control, testing and governance',
-                  'Bridge the gap from prototype to production',
-                ],
-              ),
-            ];
-            if (!wide) {
-              return Column(children: [
-                for (final c in cards) ...[
-                  c,
-                  if (c != cards.last) const SizedBox(height: 20),
-                ]
-              ]);
-            }
-            return IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final c in cards) ...[
-                    Expanded(child: c),
-                    if (c != cards.last) const SizedBox(width: 20),
+          LayoutBuilder(
+            builder: (context, c) {
+              final wide = c.maxWidth > 820;
+              final cards = [
+                _SegmentCard(
+                  color: const Color(0xFF6EB47F),
+                  icon: Icons.person_outline,
+                  title: 'Solo builders',
+                  subtitle: 'Single-person businesses',
+                  bullets: const [
+                    'Freelancers & consultants building their own tools',
+                    'Enterprise-grade quality without a dev team',
+                    'From idea to production-ready app, with guardrails',
                   ],
-                ],
-              ),
-            );
-          }),
+                ),
+                _SegmentCard(
+                  color: Brand.gold,
+                  icon: Icons.apartment_outlined,
+                  title: 'SME to enterprise',
+                  subtitle: 'Company applications',
+                  bullets: const [
+                    'Internal tools, workflows, and customer-facing apps',
+                    'IT sets quality gates, business users do UAT',
+                    'Compliance, testing and deployment standards built in',
+                  ],
+                ),
+                _SegmentCard(
+                  color: Brand.accent,
+                  icon: Icons.favorite_border,
+                  title: 'Prototype graduates',
+                  subtitle: 'Apps built with consumer AI tools',
+                  bullets: const [
+                    'Export from any AI builder → import into Avokaido',
+                    'Add quality control, testing and governance',
+                    'Bridge the gap from prototype to production',
+                  ],
+                ),
+              ];
+              if (!wide) {
+                return Column(
+                  children: [
+                    for (final c in cards) ...[
+                      c,
+                      if (c != cards.last) const SizedBox(height: 20),
+                    ],
+                  ],
+                );
+              }
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final c in cards) ...[
+                      Expanded(child: c),
+                      if (c != cards.last) const SizedBox(width: 20),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -1039,28 +1121,39 @@ class _SegmentCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Center(
-            child: Text(title,
-                style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: Brand.darkGreen)),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Brand.darkGreen,
+              ),
+            ),
           ),
           const SizedBox(height: 2),
           Center(
-            child: Text(subtitle,
-                style: const TextStyle(fontSize: 13, color: Colors.black54)),
+            child: Text(
+              subtitle,
+              style: const TextStyle(fontSize: 13, color: Colors.black54),
+            ),
           ),
           const SizedBox(height: 16),
           for (final b in bullets) ...[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('•  ',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w700, color: Brand.green)),
+                const Text(
+                  '•  ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Brand.green,
+                  ),
+                ),
                 Expanded(
-                  child: Text(b,
-                      style: const TextStyle(fontSize: 13.5, height: 1.5)),
+                  child: Text(
+                    b,
+                    style: const TextStyle(fontSize: 13.5, height: 1.5),
+                  ),
                 ),
               ],
             ),
@@ -1106,12 +1199,21 @@ class PitchPricing extends StatelessWidget {
             runSpacing: 20,
             alignment: WrapAlignment.center,
             children: [
-              _PriceFact(Icons.key_outlined, 'Bring your own keys',
-                  'Claude, OpenAI, Gemini — billed directly by the provider.'),
-              _PriceFact(Icons.percent, '2% markup',
-                  'Added transparently on top of token spend.'),
-              _PriceFact(Icons.toggle_off_outlined, 'No seats, no tiers',
-                  'Invite your whole team. Pricing never gets in the way.'),
+              _PriceFact(
+                Icons.key_outlined,
+                'Bring your own keys',
+                'Claude, OpenAI, Gemini — billed directly by the provider.',
+              ),
+              _PriceFact(
+                Icons.percent,
+                '2% markup',
+                'Added transparently on top of token spend.',
+              ),
+              _PriceFact(
+                Icons.toggle_off_outlined,
+                'No seats, no tiers',
+                'Invite your whole team. Pricing never gets in the way.',
+              ),
             ],
           ),
         ],
@@ -1142,14 +1244,16 @@ class _PriceFact extends StatelessWidget {
           children: [
             Icon(icon, color: Brand.green),
             const SizedBox(height: 10),
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Brand.darkGreen)),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Brand.darkGreen,
+              ),
+            ),
             const SizedBox(height: 6),
-            Text(body,
-                style: const TextStyle(fontSize: 13.5, height: 1.5)),
+            Text(body, style: const TextStyle(fontSize: 13.5, height: 1.5)),
           ],
         ),
       ),
@@ -1175,33 +1279,46 @@ class PitchMarket extends StatelessWidget {
           const SizedBox(height: 16),
           const PitchHeadline('A massive and growing market.'),
           const SizedBox(height: 32),
-          LayoutBuilder(builder: (context, c) {
-            final wide = c.maxWidth > 760;
-            final cards = [
-              _MarketStat('\$155B', 'AI software market by 2030',
-                  'Source: Grand View Research'),
-              _MarketStat('59%', 'of enterprises plan AI dev adoption',
-                  'Source: Gartner 2025'),
-              _MarketStat('10×', 'productivity gain with AI coding tools',
-                  'Reputation / unverified predictions'),
-            ];
-            if (!wide) {
-              return Column(children: [
-                for (final c in cards) ...[
-                  c,
-                  if (c != cards.last) const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, c) {
+              final wide = c.maxWidth > 760;
+              final cards = [
+                _MarketStat(
+                  '\$155B',
+                  'AI software market by 2030',
+                  'Source: Grand View Research',
+                ),
+                _MarketStat(
+                  '59%',
+                  'of enterprises plan AI dev adoption',
+                  'Source: Gartner 2025',
+                ),
+                _MarketStat(
+                  '10×',
+                  'productivity gain with AI coding tools',
+                  'Reputation / unverified predictions',
+                ),
+              ];
+              if (!wide) {
+                return Column(
+                  children: [
+                    for (final c in cards) ...[
+                      c,
+                      if (c != cards.last) const SizedBox(height: 16),
+                    ],
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  for (final c in cards) ...[
+                    Expanded(child: c),
+                    if (c != cards.last) const SizedBox(width: 20),
+                  ],
                 ],
-              ]);
-            }
-            return Row(
-              children: [
-                for (final c in cards) ...[
-                  Expanded(child: c),
-                  if (c != cards.last) const SizedBox(width: 20),
-                ],
-              ],
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -1225,22 +1342,29 @@ class _MarketStat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(headline,
-              style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w800,
-                  color: Brand.green)),
+          Text(
+            headline,
+            style: const TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.w800,
+              color: Brand.green,
+            ),
+          ),
           const SizedBox(height: 12),
-          Text(label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 15, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 10),
-          Text(source,
-              style: const TextStyle(
-                  fontSize: 11,
-                  color: Colors.black45,
-                  fontStyle: FontStyle.italic)),
+          Text(
+            source,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Colors.black45,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
         ],
       ),
     );
@@ -1265,38 +1389,58 @@ class PitchRoadmap extends StatelessWidget {
           const SizedBox(height: 16),
           const PitchHeadline("What we'll deliver with your investment."),
           const SizedBox(height: 32),
-          LayoutBuilder(builder: (context, c) {
-            final wide = c.maxWidth > 820;
-            final cards = [
-              _RoadmapCard(Brand.green, 'Q2 2026', 'Demo clients',
-                  'Early testing with select enterprise partners, feedback loops, core validation.'),
-              _RoadmapCard(Brand.darkGreen, 'Q3 2026', 'MVP launch',
-                  'Public AI app builder, templates, onboarding flows.'),
-              _RoadmapCard(Brand.gold, 'Q4 2026', 'Team & compliance',
-                  'SSO, role-based access, GDPR & SOC 2 templates, audit logging.'),
-              _RoadmapCard(Brand.accent, 'Q1 2027', 'Enterprise GA',
-                  'Self-hosted option, custom integrations, partner program.'),
-            ];
-            if (!wide) {
-              return Column(children: [
-                for (final c in cards) ...[
-                  c,
-                  if (c != cards.last) const SizedBox(height: 16),
-                ],
-              ]);
-            }
-            return IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final c in cards) ...[
-                    Expanded(child: c),
-                    if (c != cards.last) const SizedBox(width: 16),
+          LayoutBuilder(
+            builder: (context, c) {
+              final wide = c.maxWidth > 820;
+              final cards = [
+                _RoadmapCard(
+                  Brand.green,
+                  'Q2 2026',
+                  'Demo clients',
+                  'Early testing with select enterprise partners, feedback loops, core validation.',
+                ),
+                _RoadmapCard(
+                  Brand.darkGreen,
+                  'Q3 2026',
+                  'MVP launch',
+                  'Public AI app builder, templates, onboarding flows.',
+                ),
+                _RoadmapCard(
+                  Brand.gold,
+                  'Q4 2026',
+                  'Team & compliance',
+                  'SSO, role-based access, GDPR & SOC 2 templates, audit logging.',
+                ),
+                _RoadmapCard(
+                  Brand.accent,
+                  'Q1 2027',
+                  'Enterprise GA',
+                  'Self-hosted option, custom integrations, partner program.',
+                ),
+              ];
+              if (!wide) {
+                return Column(
+                  children: [
+                    for (final c in cards) ...[
+                      c,
+                      if (c != cards.last) const SizedBox(height: 16),
+                    ],
                   ],
-                ],
-              ),
-            );
-          }),
+                );
+              }
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final c in cards) ...[
+                      Expanded(child: c),
+                      if (c != cards.last) const SizedBox(width: 16),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -1322,21 +1466,26 @@ class _RoadmapCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(quarter,
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                  letterSpacing: 0.8)),
+          Text(
+            quarter,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: color,
+              letterSpacing: 0.8,
+            ),
+          ),
           const SizedBox(height: 10),
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Brand.darkGreen)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Brand.darkGreen,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(body,
-              style: const TextStyle(fontSize: 13.5, height: 1.5)),
+          Text(body, style: const TextStyle(fontSize: 13.5, height: 1.5)),
         ],
       ),
     );
@@ -1365,18 +1514,23 @@ class PitchOwnership extends StatelessWidget {
           const SizedBox(height: 16),
           _OwnerRow(Brand.gold, '30%', 'Kasper Berg', 'CTO & co-founder'),
           const SizedBox(height: 16),
-          _OwnerRow(const Color(0xFF6EB47F), '40%', 'Investors',
-              'Seed round allocation'),
+          _OwnerRow(
+            const Color(0xFF6EB47F),
+            '40%',
+            'Investors',
+            'Seed round allocation',
+          ),
           const SizedBox(height: 24),
           const Text(
             'Founders retain 60% combined equity, ensuring long-term '
             'commitment. Investor-friendly 40% allocation with standard '
             'protections and pro-rata rights.',
             style: TextStyle(
-                fontStyle: FontStyle.italic,
-                color: Colors.black54,
-                fontSize: 13,
-                height: 1.55),
+              fontStyle: FontStyle.italic,
+              color: Colors.black54,
+              fontSize: 13,
+              height: 1.55,
+            ),
           ),
         ],
       ),
@@ -1403,25 +1557,32 @@ class _OwnerRow extends StatelessWidget {
         const SizedBox(width: 20),
         SizedBox(
           width: 90,
-          child: Text(pct,
-              style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: Brand.darkGreen)),
+          child: Text(
+            pct,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: Brand.darkGreen,
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(name,
-                  style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: Brand.darkGreen)),
-              Text(role,
-                  style: const TextStyle(
-                      fontSize: 13.5, color: Colors.black54)),
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Brand.darkGreen,
+                ),
+              ),
+              Text(
+                role,
+                style: const TextStyle(fontSize: 13.5, color: Colors.black54),
+              ),
             ],
           ),
         ),
@@ -1465,8 +1626,10 @@ class PitchContact extends StatelessWidget {
             child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _ContactRow('Johannes Skagius',
-                    'johannes.skagius@avokaido.com'),
+                _ContactRow(
+                  'Johannes Skagius',
+                  'johannes.skagius@avokaido.com',
+                ),
                 SizedBox(height: 12),
                 _ContactRow('Kasper Berg', 'kasper.berg@avokaido.com'),
               ],
@@ -1488,15 +1651,19 @@ class _ContactRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(name,
-            style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Colors.white)),
+        Text(
+          name,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
         const SizedBox(height: 2),
-        SelectableText(email,
-            style: const TextStyle(
-                fontSize: 14, color: Color(0xFFC5D4C9))),
+        SelectableText(
+          email,
+          style: const TextStyle(fontSize: 14, color: Color(0xFFC5D4C9)),
+        ),
       ],
     );
   }

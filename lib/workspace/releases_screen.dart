@@ -67,8 +67,10 @@ class _AvailableReleases extends StatelessWidget {
 
   Widget _buildBody(AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snap) {
     if (snap.hasError) {
-      return Text('Failed to load releases: ${snap.error}',
-          style: const TextStyle(color: Colors.red));
+      return Text(
+        'Failed to load releases: ${snap.error}',
+        style: const TextStyle(color: Colors.red),
+      );
     }
     if (!snap.hasData) {
       return const Padding(
@@ -116,20 +118,20 @@ class _ReleaseCard extends StatelessWidget {
   final String downloadUrl;
 
   String get _label => switch (platform) {
-        'macos' => 'macOS',
-        'linux' => 'Linux',
-        'windows' => 'Windows',
-        'web' => 'Web',
-        _ => platform,
-      };
+    'macos' => 'macOS',
+    'linux' => 'Linux',
+    'windows' => 'Windows',
+    'web' => 'Web',
+    _ => platform,
+  };
 
   IconData get _icon => switch (platform) {
-        'macos' => Icons.laptop_mac,
-        'linux' => Icons.computer,
-        'windows' => Icons.window,
-        'web' => Icons.language,
-        _ => Icons.download,
-      };
+    'macos' => Icons.laptop_mac,
+    'linux' => Icons.computer,
+    'windows' => Icons.window,
+    'web' => Icons.language,
+    _ => Icons.download,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -166,8 +168,7 @@ class _ReleaseCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   'Released ${_formatDate(releasedAt!)}',
-                  style:
-                      const TextStyle(fontSize: 12, color: Colors.black54),
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
               if (notes != null && notes!.isNotEmpty) ...[
@@ -215,8 +216,9 @@ class _Installations extends StatelessWidget {
         .orderBy('lastSeen', descending: true)
         .snapshots();
 
-    final releases =
-        FirebaseFirestore.instance.collection('releases').snapshots();
+    final releases = FirebaseFirestore.instance
+        .collection('releases')
+        .snapshots();
 
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: releases,
@@ -246,8 +248,10 @@ class _Installations extends StatelessWidget {
     Map<String, String> latestByPlatform,
   ) {
     if (snap.hasError) {
-      return Text('Failed to load installations: ${snap.error}',
-          style: const TextStyle(color: Colors.red));
+      return Text(
+        'Failed to load installations: ${snap.error}',
+        style: const TextStyle(color: Colors.red),
+      );
     }
     if (!snap.hasData) {
       return const Padding(
@@ -288,7 +292,8 @@ class _InstallationRow extends StatelessWidget {
     final platform = data['platform'] as String? ?? '';
     final version = data['appVersion'] as String? ?? '';
     final lastSeen = (data['lastSeen'] as num?)?.toInt();
-    final outdated = latestForPlatform != null &&
+    final outdated =
+        latestForPlatform != null &&
         latestForPlatform!.isNotEmpty &&
         version.isNotEmpty &&
         version != latestForPlatform;
@@ -311,8 +316,7 @@ class _InstallationRow extends StatelessWidget {
                 ),
                 Text(
                   _platformLabel(platform),
-                  style:
-                      const TextStyle(fontSize: 12, color: Colors.black54),
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),
@@ -324,7 +328,8 @@ class _InstallationRow extends StatelessWidget {
                 Text(
                   version.isEmpty ? '—' : 'v$version',
                   style: const TextStyle(
-                      fontFeatures: [FontFeature.tabularFigures()]),
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
                 ),
                 const SizedBox(width: 8),
                 if (outdated)
@@ -362,19 +367,19 @@ class _InstallationRow extends StatelessWidget {
   }
 
   IconData _platformIcon(String p) => switch (p) {
-        'macos' => Icons.laptop_mac,
-        'linux' => Icons.computer,
-        'windows' => Icons.window,
-        _ => Icons.devices_other,
-      };
+    'macos' => Icons.laptop_mac,
+    'linux' => Icons.computer,
+    'windows' => Icons.window,
+    _ => Icons.devices_other,
+  };
 
   String _platformLabel(String p) => switch (p) {
-        'macos' => 'macOS',
-        'linux' => 'Linux',
-        'windows' => 'Windows',
-        '' => 'Unknown platform',
-        _ => p,
-      };
+    'macos' => 'macOS',
+    'linux' => 'Linux',
+    'windows' => 'Windows',
+    '' => 'Unknown platform',
+    _ => p,
+  };
 }
 
 class _EmptyInstallations extends StatelessWidget {
@@ -427,11 +432,15 @@ class _Section extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 2),
-        Text(subtitle,
-            style: const TextStyle(fontSize: 12.5, color: Colors.black54)),
+        Text(
+          subtitle,
+          style: const TextStyle(fontSize: 12.5, color: Colors.black54),
+        ),
         const SizedBox(height: 12),
         child,
       ],

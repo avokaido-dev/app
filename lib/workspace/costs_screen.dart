@@ -133,7 +133,8 @@ class _Aggregates {
   final Map<String, double> byDay;
 
   static _Aggregates from(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) {
     double total = 0;
     int tokIn = 0;
     int tokOut = 0;
@@ -182,8 +183,7 @@ class _Aggregates {
       final perProv =
           (data['byProvider'] as Map?)?.cast<String, Object?>() ?? const {};
       for (final entry in perProv.entries) {
-        final v =
-            (entry.value as Map?)?.cast<String, Object?>() ?? const {};
+        final v = (entry.value as Map?)?.cast<String, Object?>() ?? const {};
         providers.update(
           entry.key,
           (p) => p.add(
@@ -290,11 +290,11 @@ String _fmtInt(int v) {
 }
 
 String _providerLabel(String id) => switch (id) {
-      'anthropic' => 'Anthropic',
-      'openai' => 'OpenAI',
-      'gemini' => 'Google Gemini',
-      _ => id,
-    };
+  'anthropic' => 'Anthropic',
+  'openai' => 'OpenAI',
+  'gemini' => 'Google Gemini',
+  _ => id,
+};
 
 class _TotalsRow extends StatelessWidget {
   const _TotalsRow({required this.agg, required this.windowDays});
@@ -366,8 +366,7 @@ class _StatCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     label,
-                    style: const TextStyle(
-                        fontSize: 12, color: Colors.black54),
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -376,8 +375,7 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: const TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.w700),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -400,12 +398,16 @@ class _ByProviderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('By provider',
-                style: TextStyle(fontWeight: FontWeight.w600)),
+            const Text(
+              'By provider',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 12),
             if (rows.isEmpty)
-              const Text('No provider breakdown yet.',
-                  style: TextStyle(color: Colors.black54))
+              const Text(
+                'No provider breakdown yet.',
+                style: TextStyle(color: Colors.black54),
+              )
             else
               DataTable(
                 columnSpacing: 24,
@@ -418,13 +420,15 @@ class _ByProviderCard extends StatelessWidget {
                 ],
                 rows: [
                   for (final p in rows)
-                    DataRow(cells: [
-                      DataCell(Text(_providerLabel(p.providerId))),
-                      DataCell(Text(_fmtUsd(p.costUsd))),
-                      DataCell(Text(_fmtInt(p.tokensIn))),
-                      DataCell(Text(_fmtInt(p.tokensOut))),
-                      DataCell(Text(_fmtInt(p.runCount))),
-                    ]),
+                    DataRow(
+                      cells: [
+                        DataCell(Text(_providerLabel(p.providerId))),
+                        DataCell(Text(_fmtUsd(p.costUsd))),
+                        DataCell(Text(_fmtInt(p.tokensIn))),
+                        DataCell(Text(_fmtInt(p.tokensOut))),
+                        DataCell(Text(_fmtInt(p.runCount))),
+                      ],
+                    ),
                 ],
               ),
           ],
@@ -448,12 +452,16 @@ class _ByUserCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('By user',
-                style: TextStyle(fontWeight: FontWeight.w600)),
+            const Text(
+              'By user',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 12),
             if (rows.isEmpty)
-              const Text('No per-user data yet.',
-                  style: TextStyle(color: Colors.black54))
+              const Text(
+                'No per-user data yet.',
+                style: TextStyle(color: Colors.black54),
+              )
             else
               DataTable(
                 columnSpacing: 24,
@@ -465,12 +473,14 @@ class _ByUserCard extends StatelessWidget {
                 ],
                 rows: [
                   for (final u in rows)
-                    DataRow(cells: [
-                      DataCell(Text(u.email ?? u.userId)),
-                      DataCell(Text(_fmtUsd(u.costUsd))),
-                      DataCell(Text(_fmtInt(u.tokensIn + u.tokensOut))),
-                      DataCell(Text(_fmtInt(u.runCount))),
-                    ]),
+                    DataRow(
+                      cells: [
+                        DataCell(Text(u.email ?? u.userId)),
+                        DataCell(Text(_fmtUsd(u.costUsd))),
+                        DataCell(Text(_fmtInt(u.tokensIn + u.tokensOut))),
+                        DataCell(Text(_fmtInt(u.runCount))),
+                      ],
+                    ),
                 ],
               ),
           ],
@@ -494,8 +504,11 @@ class _DailyTrendCard extends StatelessWidget {
     final series = <MapEntry<String, double>>[];
     double maxCost = 0;
     for (var i = windowDays - 1; i >= 0; i--) {
-      final day = DateTime(now.year, now.month, now.day)
-          .subtract(Duration(days: i));
+      final day = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: i));
       final key = _dateKey(day);
       final v = agg.byDay[key] ?? 0;
       series.add(MapEntry(key, v));
@@ -507,15 +520,19 @@ class _DailyTrendCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Daily trend',
-                style: TextStyle(fontWeight: FontWeight.w600)),
+            const Text(
+              'Daily trend',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 12),
             SizedBox(
               height: 120,
               child: maxCost <= 0
                   ? const Center(
-                      child: Text('No activity in this window.',
-                          style: TextStyle(color: Colors.black54)),
+                      child: Text(
+                        'No activity in this window.',
+                        style: TextStyle(color: Colors.black54),
+                      ),
                     )
                   : Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -525,11 +542,14 @@ class _DailyTrendCard extends StatelessWidget {
                             child: Tooltip(
                               message: '${e.key}: ${_fmtUsd(e.value)}',
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 1),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 1,
+                                ),
                                 child: FractionallySizedBox(
-                                  heightFactor:
-                                      (e.value / maxCost).clamp(0.02, 1.0),
+                                  heightFactor: (e.value / maxCost).clamp(
+                                    0.02,
+                                    1.0,
+                                  ),
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: Theme.of(context)
@@ -553,12 +573,14 @@ class _DailyTrendCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(series.first.key,
-                    style: const TextStyle(
-                        fontSize: 11, color: Colors.black54)),
-                Text(series.last.key,
-                    style: const TextStyle(
-                        fontSize: 11, color: Colors.black54)),
+                Text(
+                  series.first.key,
+                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                ),
+                Text(
+                  series.last.key,
+                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                ),
               ],
             ),
           ],
@@ -578,8 +600,11 @@ class _EmptyState extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         child: Column(
           children: [
-            const Icon(Icons.query_stats_outlined,
-                size: 48, color: Colors.black38),
+            const Icon(
+              Icons.query_stats_outlined,
+              size: 48,
+              color: Colors.black38,
+            ),
             const SizedBox(height: 12),
             const Text(
               'No usage data yet',
@@ -615,8 +640,7 @@ class _ErrorCard extends StatelessWidget {
             const Icon(Icons.error_outline, color: Colors.red),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(message,
-                  style: const TextStyle(color: Colors.red)),
+              child: Text(message, style: const TextStyle(color: Colors.red)),
             ),
           ],
         ),

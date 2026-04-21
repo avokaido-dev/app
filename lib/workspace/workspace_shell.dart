@@ -24,11 +24,13 @@ class WorkspaceShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLoadingWorkspace =
         auth.status == AuthStatus.signedInPending || auth.workspaceId == null;
-    final destinations =
-        auth.isOrgAdmin ? _adminDestinations : _memberDestinations;
+    final destinations = auth.isOrgAdmin
+        ? _adminDestinations
+        : _memberDestinations;
     final location = GoRouterState.of(context).uri.path;
-    final selectedIndex =
-        destinations.indexWhere((d) => location.startsWith(d.route));
+    final selectedIndex = destinations.indexWhere(
+      (d) => location.startsWith(d.route),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -75,8 +77,7 @@ class WorkspaceShell extends StatelessWidget {
             NavigationRail(
               selectedIndex: selectedIndex < 0 ? 0 : selectedIndex,
               labelType: NavigationRailLabelType.all,
-              onDestinationSelected: (i) =>
-                  context.go(destinations[i].route),
+              onDestinationSelected: (i) => context.go(destinations[i].route),
               destinations: [
                 for (final d in destinations)
                   NavigationRailDestination(
@@ -88,9 +89,7 @@ class WorkspaceShell extends StatelessWidget {
           if (!isLoadingWorkspace && destinations.length > 1)
             const VerticalDivider(width: 1),
           Expanded(
-            child: isLoadingWorkspace
-                ? const _LoadingWorkspaceView()
-                : child,
+            child: isLoadingWorkspace ? const _LoadingWorkspaceView() : child,
           ),
         ],
       ),

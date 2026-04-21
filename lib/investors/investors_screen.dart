@@ -61,8 +61,10 @@ class _InvestorTopBar extends StatelessWidget {
             onPressed: () => context.go('/tutorial'),
             style: TextButton.styleFrom(
               foregroundColor: Brand.darkGreen,
-              textStyle:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             child: const Text('Tutorial'),
           ),
@@ -70,8 +72,10 @@ class _InvestorTopBar extends StatelessWidget {
             onPressed: () => context.go('/signin'),
             style: TextButton.styleFrom(
               foregroundColor: Brand.darkGreen,
-              textStyle:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             child: const Text('Back to product'),
           ),
@@ -80,8 +84,7 @@ class _InvestorTopBar extends StatelessWidget {
             onPressed: () => context.go('/signin'),
             style: FilledButton.styleFrom(
               backgroundColor: Brand.green,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
             child: const Text('Sign in'),
           ),
@@ -149,9 +152,10 @@ class _HeroPill extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Brand.darkGreen),
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Brand.darkGreen,
+        ),
       ),
     );
   }

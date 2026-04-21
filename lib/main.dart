@@ -21,7 +21,10 @@ import 'workspace/settings_screen.dart';
 import 'workspace/team_screen.dart';
 import 'workspace/workspace_shell.dart';
 
-const _useEmulators = bool.fromEnvironment('USE_EMULATORS', defaultValue: false);
+const _useEmulators = bool.fromEnvironment(
+  'USE_EMULATORS',
+  defaultValue: false,
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,8 +79,7 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
         case AuthStatus.signedInNoWorkspace:
           return loc == '/create-workspace' ? null : '/create-workspace';
         case AuthStatus.signedInWithWorkspace:
-          final home =
-              widget.auth.isOrgAdmin ? _adminHome : _memberHome;
+          final home = widget.auth.isOrgAdmin ? _adminHome : _memberHome;
           if (loc == '/create-workspace') {
             return home;
           }
@@ -97,14 +99,8 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
         path: '/signin',
         builder: (_, __) => SignInScreen(auth: widget.auth),
       ),
-      GoRoute(
-        path: '/investors',
-        builder: (_, __) => const InvestorsScreen(),
-      ),
-      GoRoute(
-        path: '/tutorial',
-        builder: (_, __) => const TutorialScreen(),
-      ),
+      GoRoute(path: '/investors', builder: (_, __) => const InvestorsScreen()),
+      GoRoute(path: '/tutorial', builder: (_, __) => const TutorialScreen()),
       GoRoute(
         path: '/invite/:token',
         builder: (_, state) =>
@@ -151,10 +147,7 @@ class _AvokaidoAppState extends State<AvokaidoApp> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Avokaido',
-      theme: ThemeData(
-        colorSchemeSeed: Colors.green,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorSchemeSeed: Colors.green, useMaterial3: true),
       routerConfig: _router,
     );
   }

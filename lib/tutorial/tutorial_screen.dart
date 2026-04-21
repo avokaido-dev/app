@@ -55,8 +55,10 @@ class _TutorialTopBar extends StatelessWidget {
             onPressed: () => context.go('/signin'),
             style: TextButton.styleFrom(
               foregroundColor: Brand.darkGreen,
-              textStyle:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             child: const Text('Back to product'),
           ),
@@ -65,8 +67,7 @@ class _TutorialTopBar extends StatelessWidget {
             onPressed: () => context.go('/signin'),
             style: FilledButton.styleFrom(
               backgroundColor: Brand.green,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
             child: const Text('Sign in'),
           ),
@@ -89,7 +90,8 @@ class _TutorialHero extends StatelessWidget {
           const PitchEyebrow('Getting started'),
           const SizedBox(height: 16),
           const PitchHeadline(
-              'From empty account to\nyour first pull request.'),
+            'From empty account to\nyour first pull request.',
+          ),
           const SizedBox(height: 20),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 760),
@@ -195,60 +197,68 @@ class _StepRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: const Border(left: BorderSide(color: Brand.green, width: 4)),
       ),
-      child: LayoutBuilder(builder: (context, c) {
-        final wide = c.maxWidth > 640;
-        final number = Container(
-          width: 48,
-          height: 48,
-          alignment: Alignment.center,
-          decoration:
-              const BoxDecoration(color: Brand.green, shape: BoxShape.circle),
-          child: Text('${step.n}',
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700)),
-        );
-        final text = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(step.icon, color: Brand.green, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(step.title,
-                      style: const TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                          color: Brand.darkGreen)),
-                ),
-              ],
+      child: LayoutBuilder(
+        builder: (context, c) {
+          final wide = c.maxWidth > 640;
+          final number = Container(
+            width: 48,
+            height: 48,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: Brand.green,
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 8),
-            Text(step.body,
-                style: const TextStyle(fontSize: 14.5, height: 1.55)),
-          ],
-        );
-        if (!wide) {
-          return Column(
+            child: Text(
+              '${step.n}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          );
+          final text = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(step.icon, color: Brand.green, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      step.title,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
+                        color: Brand.darkGreen,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                step.body,
+                style: const TextStyle(fontSize: 14.5, height: 1.55),
+              ),
+            ],
+          );
+          if (!wide) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [number, const SizedBox(height: 16), text],
+            );
+          }
+          return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               number,
-              const SizedBox(height: 16),
-              text,
+              const SizedBox(width: 20),
+              Expanded(child: text),
             ],
           );
-        }
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            number,
-            const SizedBox(width: 20),
-            Expanded(child: text),
-          ],
-        );
-      }),
+        },
+      ),
     );
   }
 }
@@ -322,13 +332,13 @@ class _FaqItem extends StatelessWidget {
           Text(
             question,
             style: const TextStyle(
-                fontSize: 15.5,
-                fontWeight: FontWeight.w700,
-                color: Brand.darkGreen),
+              fontSize: 15.5,
+              fontWeight: FontWeight.w700,
+              color: Brand.darkGreen,
+            ),
           ),
           const SizedBox(height: 6),
-          Text(answer,
-              style: const TextStyle(fontSize: 14, height: 1.55)),
+          Text(answer, style: const TextStyle(fontSize: 14, height: 1.55)),
         ],
       ),
     );
@@ -354,9 +364,10 @@ class _TutorialCta extends StatelessWidget {
               'the plumbing is on us.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                  color: Color(0xFFB6C9BB),
-                  fontSize: 16,
-                  height: 1.55),
+                color: Color(0xFFB6C9BB),
+                fontSize: 16,
+                height: 1.55,
+              ),
             ),
           ),
           const SizedBox(height: 28),
@@ -366,10 +377,11 @@ class _TutorialCta extends StatelessWidget {
             label: const Text('Start free'),
             style: FilledButton.styleFrom(
               backgroundColor: Brand.green,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               textStyle: const TextStyle(
-                  fontSize: 15, fontWeight: FontWeight.w600),
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

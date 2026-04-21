@@ -66,8 +66,7 @@ class _WorkspaceHeader extends StatelessWidget {
                     children: [
                       const Text(
                         'You are a member of',
-                        style:
-                            TextStyle(fontSize: 12, color: Colors.black54),
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -139,20 +138,20 @@ class _PlatformDownloadCard extends StatelessWidget {
   final String url;
 
   String get _label => switch (platform) {
-        'macos' => 'macOS',
-        'linux' => 'Linux',
-        'windows' => 'Windows',
-        'web' => 'Web (zip)',
-        _ => platform,
-      };
+    'macos' => 'macOS',
+    'linux' => 'Linux',
+    'windows' => 'Windows',
+    'web' => 'Web (zip)',
+    _ => platform,
+  };
 
   IconData get _icon => switch (platform) {
-        'macos' => Icons.laptop_mac,
-        'linux' => Icons.computer,
-        'windows' => Icons.window,
-        'web' => Icons.language,
-        _ => Icons.download,
-      };
+    'macos' => Icons.laptop_mac,
+    'linux' => Icons.computer,
+    'windows' => Icons.window,
+    'web' => Icons.language,
+    _ => Icons.download,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -166,11 +165,12 @@ class _PlatformDownloadCard extends StatelessWidget {
             children: [
               Icon(_icon, size: 28),
               const SizedBox(height: 8),
-              Text(_label,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(_label, style: const TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 2),
-              Text('v$version',
-                  style: const TextStyle(fontSize: 12, color: Colors.black54)),
+              Text(
+                'v$version',
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
               const SizedBox(height: 12),
               FilledButton.icon(
                 onPressed: url.isEmpty

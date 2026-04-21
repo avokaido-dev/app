@@ -87,12 +87,12 @@ class _CreateWorkspaceScreenState extends State<CreateWorkspaceScreen> {
                 Text(
                   _emailDomain == null
                       ? 'You will become the org admin for your workspace. '
-                          'Anyone who signs up with the same email domain '
-                          'afterwards joins automatically as a member.'
+                            'Anyone who signs up with the same email domain '
+                            'afterwards joins automatically as a member.'
                       : 'You will become the org admin for @$_emailDomain. '
-                          'Anyone else who signs up with an @$_emailDomain '
-                          'email afterwards joins this workspace as a member '
-                          'automatically.',
+                            'Anyone else who signs up with an @$_emailDomain '
+                            'email afterwards joins this workspace as a member '
+                            'automatically.',
                   style: const TextStyle(color: Colors.black54),
                 ),
                 const SizedBox(height: 24),
