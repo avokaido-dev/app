@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../auth/auth_service.dart';
+import 'smoke_tests/smoke_tests_screen.dart';
 
 /// Workspace settings — org admin controls the central config that every
 /// team member's desktop app picks up via `workspaces/{id}.settings.*`.
@@ -692,6 +693,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     setState(() => _qaCheckSeverity[id] = v),
                 onLockedChanged: (v) => setState(() => _qaRulesLocked = v),
                 onSave: _saveQaRules,
+              ),
+              const SizedBox(height: 20),
+              _SmokeTestsCard(
+                canEdit: canEdit,
+                onOpen: () {
+                  final wsId = widget.auth.workspaceId;
+                  if (wsId == null) return;
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => SmokeTestsScreen(workspaceId: wsId),
+                    ),
+                  );
+                },
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
@@ -2137,6 +2151,39 @@ class _GithubRepoPickerDialogState extends State<_GithubRepoPickerDialog> {
               : 'Add ${_selected.length}'),
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Smoke tests summary card — entry point to the full smoke-tests admin
+// screen. The screen handles authoring, review/approval, and run history.
+// ---------------------------------------------------------------------------
+
+class _SmokeTestsCard extends StatelessWidget {
+  const _SmokeTestsCard({required this.canEdit, required this.onOpen});
+
+  final bool canEdit;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SectionCard(
+      title: 'Smoke tests',
+      subtitle:
+          'Admin-authored tests that run on workspace desktops. Requires '
+          'two-admin approval before desktops will execute them.',
+      trailing: FilledButton.icon(
+        onPressed: canEdit ? onOpen : null,
+        icon: const Icon(Icons.open_in_new, size: 16),
+        label: const Text('Open'),
+      ),
+      child: const Text(
+        'Each test is scanned for obviously harmful patterns and must be '
+        'approved by a second admin. Desktops verify the server signature '
+        'before running.',
+        style: TextStyle(fontSize: 12, color: Colors.black54),
+      ),
     );
   }
 }
